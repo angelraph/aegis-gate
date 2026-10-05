@@ -441,10 +441,18 @@ function send(res, code, body) {
   });
   res.end(JSON.stringify(body));
 }
+// Reads a JSON body. An oversized body is drained (not abandoned mid-stream) so the
+// connection stays usable for the client's next request; absurd sizes are cut off.
 async function readBody(req) {
-  let s = "";
-  for await (const c of req) { s += c; if (s.length > 1e5) throw new Error("Request too large."); }
-  return s ? JSON.parse(s) : {};
+  let s = "", size = 0, tooLarge = false;
+  for await (const c of req) {
+    size += c.length;
+    if (size > 1e7) { req.destroy(); throw new Error("Request too large."); }
+    if (size > 1e5) { tooLarge = true; continue; }
+    s += c;
+  }
+  if (tooLarge) throw new Error("Request too large.");
+  try { return s ? JSON.parse(s) : {}; } catch { throw new Error("The request body isn't valid JSON."); }
 }
 const isAddress = (a) => typeof a === "string" && /^(utest1|zutest1|u1|zu1)[0-9a-z]{40,}$/.test(a.trim());
 

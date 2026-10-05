@@ -396,8 +396,13 @@
 
   function schedulePoll(d, confirming) {
     clearTimeout(pollTimer);
-    if (confirming || d.status === "awaiting_funds") pollTimer = setTimeout(() => load(false, true), 30000);
-    else if (["setting_up", "paying_out"].includes(d.status)) pollTimer = setTimeout(() => load(false), 6000);
+    // Self-custody: once this person has approved (or a signing session is open), keep
+    // watching, because this browser must sign when the second approval arrives.
+    const mustSign = d.mode === "self" && d.role !== "arbiter" &&
+      (d.status === "signing" || ((d.approvals || {})[d.role] && ["funded", "disputed"].includes(d.status)));
+    if (mustSign) pollTimer = setTimeout(() => load(false), 4000);
+    else if (confirming || d.status === "awaiting_funds") pollTimer = setTimeout(() => load(false, true), 30000);
+    else if (["setting_up", "paying_out", "signing"].includes(d.status)) pollTimer = setTimeout(() => load(false), 6000);
   }
 
   async function load(fresh, refresh) {

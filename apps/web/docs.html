@@ -118,12 +118,19 @@
         <li><b>Shielded end to end.</b> Funding and payout are Ironwood shielded transactions. Observers see that a transaction happened and its fee, nothing else.</li>
         <li><b>Signatures checked before broadcast.</b> Each FROST signature is verified against the spend's randomized key before the transaction is assembled.</li>
       </ul>
-      <div class="callout"><b>Current limitation.</b> In this testnet build, all three FROST signers run inside the Aegis escrow engine, which signs only on two matching approvals from different people. The next release moves each signer into its owner's browser, so the engine never holds more than the arbiter's share. Read the full <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">threat model</a>.</div>
+      <div class="callout"><b>Your key stays in your browser.</b> New deals are self-custody by default: the buyer's and seller's FROST shares are created and kept in their own browsers (WebAssembly), and the engine holds only the arbiter's share. Secret key-ceremony messages are sealed end to end, so the engine relays them without being able to read them. Before your browser signs, it checks the payout goes to the address agreed for that outcome. Read the full <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">threat model</a>.</div>
+      <h3>Two deal modes</h3>
+      <ul>
+        <li><b>Self-custody</b> (default): buyer and seller hold their own shares. Aegis can't sign without one of you.</li>
+        <li><b>Engine-signed</b> (opt-out): all three shares run in the engine, which signs only on two matching approvals from different people. Simpler, but you trust the operator.</li>
+      </ul>
       <h3>Known risks</h3>
       <ul>
         <li>The arbiter plus one side can decide the outcome. That's what 2-of-3 escrow means; pick an arbiter you're comfortable with.</li>
         <li>Anyone with your deal link acts as you. Share it only privately.</li>
         <li>Viewing keys built from a FROST group key aren't quantum-recoverable, so escrows are meant to be short-lived.</li>
+        <li>Your browser checks the payout address and the signing request's shape. It doesn't yet rebuild the whole transaction itself to recompute what it signs; that's the next step.</li>
+        <li>If you clear your browser data, your share is gone. Download the backup; with 2-of-3, the other two keys can still complete the deal.</li>
       </ul>
     </section>
 
@@ -136,6 +143,8 @@
           <tr><td>Escrow funded, 0.125 TAZ</td><td>4,465,795</td><td><code>669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef</code></td></tr>
           <tr><td>Released to seller, 0.10 TAZ, signed by buyer + seller</td><td>4,465,954</td><td><code>1b980aaa5dfd2ee811f824688c7c5b264aaa1b87aa940dddc99d3697b11e8bdf</code></td></tr>
           <tr><td>Full deal through this website: created, funded, approved by buyer + seller, paid out</td><td>4,466,046</td><td><code>af093f5660469a67369d776a45674b17971a16f96f4231f6196800fc095f4526</code></td></tr>
+          <tr><td>Self-custody release in a real browser: buyer and seller keys held only in their browsers</td><td>4,466,532</td><td><code>bf754298f5d01723ab04f936461677c48d31f711ea3a910b51cb4a16044a5447</code></td></tr>
+          <tr><td>Dispute refunded by buyer (browser key) + arbiter, completed after a deliberate engine crash mid-payout</td><td>4,466,552</td><td><code>ae74bc7347d3960fefb6740db7b2a77f66771831b35cc88cd64a0e442cc4addf</code></td></tr>
         </tbody>
       </table></div>
       <p>Public explorers haven't indexed post-NU7 Ironwood transactions yet. Audit the escrow directly by importing its viewing key, view-only, into an Ironwood testnet wallet:</p>
@@ -175,7 +184,7 @@ cargo build --release -p aegis-core
     <section id="roadmap">
       <h2>Roadmap</h2>
       <ol>
-        <li><b>Signer in your browser.</b> Each share stays on its owner's device. Before signing, it shows "pay X ZEC to Y" and refuses anything else.</li>
+        <li><b>Full transaction check in the browser.</b> Your browser already holds your key and checks the payout address; next it rebuilds the transaction itself and recomputes exactly what it signs.</li>
         <li><b>Choice of arbiter.</b> Pick an independent arbiter per deal.</li>
         <li><b>First purchase as onboarding.</b> Set up a wallet, get ZEC and shield it inside your first deal.</li>
         <li><b>Mainnet.</b> Small real trades with the community, each auditable through its viewing key.</li>

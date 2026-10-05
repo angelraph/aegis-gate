@@ -24,9 +24,22 @@
 - **Arbiter collusion.** The arbiter plus either side can take the funds. This is
   inherent to 2-of-3 escrow. Mitigations: public arbiter policy, signed dispute evidence,
   and (later) a choice of independent arbiters per deal.
-- **Blind signing (open, must fix in Week 2).** The CLI `frost-client participant` shows
-  only the sighash. The Aegis signer must receive the PCZT itself, show recipient, amount
-  and memo, recompute the sighash locally, and refuse to sign if anything differs.
+- **Key custody (self-custody deals, the default).** Buyer and seller shares are created
+  and stored in their own browsers (WebAssembly). The engine holds only the arbiter's
+  share. Round-2 key-ceremony packages carry secret shares, so they are sealed end to end
+  (ECDH P-256 + HKDF-SHA256 + AES-256-GCM); a relay that could read them could rebuild the
+  whole key from its own share plus the two packages addressed to it.
+- **Signing checks (partly done).** The browser refuses to sign unless the payout goes to
+  the address agreed for that outcome and the request is well formed. It does not yet
+  rebuild the PCZT itself to recompute the sighash; until it does, a malicious engine could
+  in principle present a different transaction with the same recipient. Next step.
+- **Engine-signed deals (opt-out).** All three shares run in the engine, which signs only
+  on two matching approvals from different people. The operator is trusted.
+- **Key loss.** Clearing browser storage deletes the share. The page offers a backup file;
+  with 2-of-3 the other two parties can still complete the deal.
+- **Active relay attack on box keys.** The engine relays each party's box public key. A
+  malicious engine could substitute its own and read round-2 packages. Box-key fingerprints
+  should be compared out of band; the UI will surface them.
 - **Viewing key reach.** All three participants hold the escrow UFVK and can see its
   activity. Anyone who learns the group key *and* the deal ID can derive the same UFVK.
   Neither is published.
