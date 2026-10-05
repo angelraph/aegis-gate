@@ -39,7 +39,7 @@
     <a href="#disputes">Disputes</a>
     <span>Trust</span>
     <a href="#security">Security model</a>
-    <a href="#proof">Proof on testnet</a>
+    <a href="#proof">Proof on-chain</a>
     <span>Build</span>
     <a href="#architecture">Architecture</a>
     <a href="#self-host">Run your own engine</a>
@@ -59,19 +59,23 @@
       <h2>Quick start</h2>
       <h3>If you're selling</h3>
       <ol>
-        <li>Open <a href="/app.html">a new escrow</a>. Enter what you're selling, the price in ZEC, your terms, and your shielded payout address.</li>
-        <li>Wait about a minute while the three keys are made.</li>
+        <li>Open <a href="/app.html">a new escrow</a>. Choose testnet or mainnet beta, then enter what you're selling, the price in ZEC, your terms, and your shielded payout address.</li>
         <li>Send the buyer link to your buyer over Signal, Telegram or any private channel. Bookmark your own link; it's your seller access.</li>
-        <li>Ship when the deal page shows the payment as confirmed. Approve the release when the buyer confirms delivery.</li>
+        <li>Keep your page open. When the buyer opens their link, your two browsers and the arbiter make the three key shares together, in under a minute.</li>
+        <li>Compare the security code with the buyer, and download your key backup.</li>
+        <li>Ship when the deal page shows the payment as confirmed. Approve the release when the buyer confirms delivery, and keep the page open while your browser checks and signs the payout.</li>
       </ol>
       <h3>If you're buying</h3>
       <ol>
-        <li>Open the link the seller sent you. Add a refund address in case the deal is cancelled.</li>
-        <li>Scan the QR code with your wallet, or copy the escrow address, and pay the exact price.</li>
-        <li>When the item arrives, press <b>Confirm delivery and release payment</b>.</li>
+        <li>Open the link the seller sent you and keep it open while your key share is made in your browser.</li>
+        <li>Compare the security code with the seller. If it doesn't match, don't pay.</li>
+        <li>Download your key backup. The payment details appear right after, with a short checklist if this is your first shielded payment.</li>
+        <li>Add a refund address in case the deal is cancelled, then scan the QR code with your wallet, or copy the escrow address, and pay the exact price.</li>
+        <li>When the item arrives, press <b>Confirm delivery and release</b>, and keep the page open while your browser checks and signs the payout.</li>
       </ol>
-      <h3>Getting testnet ZEC</h3>
-      <p>Request free TAZ from the <a href="https://faucet.testnet.valargroup.dev">Valar testnet faucet</a> (0.125 TAZ per day). Use a wallet that supports Zcash testnet and the Ironwood pool, and give it a unified address starting with <code>utest1</code>.</p>
+      <h3>Getting ZEC</h3>
+      <p><b>Testnet:</b> request free TAZ from the <a href="https://faucet.testnet.valargroup.dev">Valar testnet faucet</a> (0.125 TAZ per day). Use a wallet that supports Zcash testnet and the Ironwood pool, and give it a unified address starting with <code>utest1</code>.</p>
+      <p><b>Mainnet beta:</b> use any shielded Zcash wallet, such as Zashi, with a unified address starting with <code>u1</code>. A deal costs 0.0002 to 0.00045 ZEC (about $0.26 to $0.60).</p>
     </section>
 
     <section id="lifecycle">
@@ -79,11 +83,12 @@
       <div class="table-wrap"><table>
         <thead><tr><th>Status</th><th>What's happening</th><th>Who acts</th></tr></thead>
         <tbody>
-          <tr><td>Setting up keys</td><td>Buyer, seller and arbiter shares are created in a FROST key ceremony. The escrow address is derived from the group key.</td><td>Nobody, takes about a minute</td></tr>
+          <tr><td>Making keys</td><td>Buyer, seller and arbiter shares are created in a FROST key ceremony, in the buyer's and seller's browsers. The escrow address is derived from the group key.</td><td>Buyer and seller keep their pages open, under a minute</td></tr>
           <tr><td>Waiting for payment</td><td>The escrow is ready. The buyer pays the price into it.</td><td>Buyer</td></tr>
           <tr><td>Funded</td><td>The payment is in the escrow. Zcash wallets wait about 10 blocks (around 12 minutes) before received funds can move.</td><td>Buyer and seller</td></tr>
           <tr><td>In dispute</td><td>Buyer or seller has asked the arbiter to decide.</td><td>Arbiter, with one side</td></tr>
-          <tr><td>Paying out</td><td>Two matching approvals arrived. The signers produce one FROST signature, the transaction is proven and broadcast.</td><td>Nobody</td></tr>
+          <tr><td>Signing</td><td>Two matching approvals arrived. Each signer's browser downloads the transaction, checks it, and signs.</td><td>The two signers keep their pages open</td></tr>
+          <tr><td>Paying out</td><td>The signature shares are combined into one FROST signature, and the transaction is proven and broadcast.</td><td>Nobody</td></tr>
           <tr><td>Released / Refunded</td><td>The money has moved. The transaction ID is recorded on the deal page.</td><td>Done</td></tr>
         </tbody>
       </table></div>
@@ -136,7 +141,18 @@
     </section>
 
     <section id="proof">
-      <h2>Proof on testnet</h2>
+      <h2>Proof on-chain</h2>
+      <h3>Mainnet</h3>
+      <p>The first Aegis Gate escrow on Zcash mainnet, a self-custody deal: the buyer's and seller's keys lived only in their browsers, and each browser verified the payout before signing.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Step</th><th>Block</th><th>Transaction</th></tr></thead>
+        <tbody>
+          <tr><td>Escrow of 0.00021 ZEC released by buyer + seller</td><td>3,506,939</td><td><code>766ca9869bdafa5c9235d7117abb25bba35c7f8ced1043282cd08a6aaa31c374</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>Audit it view-only with the escrow's mainnet viewing key:</p>
+      <div class="keyline"><code id="ufvk-main">uview1gpfs3dwm0a6h24ncmrtma8klrva7zslcrf0udd85tcfuhxp9z669dc5dme7x3nuh328f3uqqlq8ln88pdcjkpvnkhzdpnyem3ea2zkkxzpyyx0udpwc9c7z5xum2jgasael5c5epdnn87w3kua5gjce7ym2szdk47scdp2j9r2upp00w7c9anmgplyc9y</code><button class="btn sm" type="button" data-copy="ufvk-main">Copy</button></div>
+      <h3>Testnet</h3>
       <p>The first escrow, created on 5 October 2026, ran end to end on Zcash testnet after the NU7 upgrade:</p>
       <div class="table-wrap"><table>
         <thead><tr><th>Step</th><th>Block</th><th>Transaction</th></tr></thead>
@@ -146,9 +162,11 @@
           <tr><td>Full deal through this website: created, funded, approved by buyer + seller, paid out</td><td>4,466,046</td><td><code>af093f5660469a67369d776a45674b17971a16f96f4231f6196800fc095f4526</code></td></tr>
           <tr><td>Self-custody release in a real browser: buyer and seller keys held only in their browsers</td><td>4,466,532</td><td><code>bf754298f5d01723ab04f936461677c48d31f711ea3a910b51cb4a16044a5447</code></td></tr>
           <tr><td>Dispute refunded by buyer (browser key) + arbiter, completed after a deliberate engine crash mid-payout</td><td>4,466,552</td><td><code>ae74bc7347d3960fefb6740db7b2a77f66771831b35cc88cd64a0e442cc4addf</code></td></tr>
+          <tr><td>Payout verified in each browser before signing: escrow rebuilt from its own key, every output checked</td><td>4,466,648</td><td><code>aa395f0b647165bd79ceb9991b66583a4b359db6484b3b249af2a2b1261d3373</code></td></tr>
+          <tr><td>Two separate browsers end to end: key ceremony, matching security codes, funding, approval, verification, release</td><td>4,466,944</td><td><code>09ac6e494fa78e97730b20bdf61204fdac9306ad2eb0443bd513107ee4c3627d</code></td></tr>
         </tbody>
       </table></div>
-      <p>Public explorers haven't indexed post-NU7 Ironwood transactions yet. Audit the escrow directly by importing its viewing key, view-only, into an Ironwood testnet wallet:</p>
+      <p>Public explorers haven't indexed post-NU7 Ironwood transactions yet. Audit the first testnet escrow directly by importing its viewing key, view-only, into an Ironwood testnet wallet:</p>
       <div class="keyline"><code id="ufvk">uviewtest143j06vt05dlepuuvt6p52jm2nthxgk3lnw8a3d2l04ugurpk6zsde26sl2gp28yzs45xsu8xmxtwjsqcg88j4jycdrraeh2kxqv5fjngusxepmkxm453yeqlwd3f4tmt6l4vhw3hve0agxdp0mkhk8g68cxaa8x4dxj6nvldn73cntq8mua2fygwylmra</code><button class="btn sm" type="button" data-copy="ufvk">Copy</button></div>
     </section>
 
@@ -184,11 +202,19 @@ cargo build --release -p aegis-core
 
     <section id="roadmap">
       <h2>Roadmap</h2>
+      <h3>Shipped</h3>
+      <ul>
+        <li><b>Self-custody keys.</b> Buyer and seller key shares are made and kept in their own browsers.</li>
+        <li><b>Payout check in your browser.</b> Every transaction is verified on your device before you sign.</li>
+        <li><b>Security codes.</b> Both screens must show the same code, so a swapped key is caught.</li>
+        <li><b>First purchase as onboarding.</b> Key backup, then a guided first shielded payment, inside your first deal.</li>
+        <li><b>Mainnet beta.</b> Real ZEC, up to about $0.60 a deal, each escrow auditable through its viewing key.</li>
+      </ul>
+      <h3>Next</h3>
       <ol>
-        <li><b>Always-on engine.</b> Today the escrow engine runs on one machine; a hosted engine removes downtime.</li>
+        <li><b>Always-on engine.</b> Today the escrow engine runs on one machine; a hosted engine removes downtime and lets the mainnet limit rise.</li>
         <li><b>Choice of arbiter.</b> Pick an independent arbiter per deal.</li>
-        <li><b>First purchase as onboarding.</b> Set up a wallet, get ZEC and shield it inside your first deal.</li>
-        <li><b>Mainnet.</b> Small real trades with the community, each auditable through its viewing key.</li>
+        <li><b>Aegis Market.</b> Listings on top of the escrow, so buyers can find sellers as well as pay them safely.</li>
       </ol>
     </section>
   </article>

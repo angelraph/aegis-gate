@@ -115,7 +115,8 @@ function devtool(deal, args) {
 }
 
 async function refreshBalance(deal) {
-  if (!deal.escrow) return deal;
+  // A closed deal's escrow never changes again; skip the chain sync (slow on mainnet).
+  if (!deal.escrow || ["released", "refunded"].includes(deal.status)) return deal;
   await devtool(deal, ["sync"]);
   const r = await devtool(deal, ["balance", "--json"]);
   try {

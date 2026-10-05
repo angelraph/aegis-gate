@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/styles.css">
+<link rel="modulepreload" href="/signer-client.js">
+<link rel="modulepreload" href="/protocol.js">
+<link rel="modulepreload" href="/signer/aegis_signer.js">
 <link rel="icon" href="/brand/mark.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/brand/mark.svg">
 <meta property="og:image" content="/brand/logo.svg">
@@ -54,7 +57,7 @@
         <div class="field"><label for="f-terms">Terms the buyer agrees to</label><textarea id="f-terms" name="terms" rows="2" maxlength="2000" placeholder="Ships within 3 days. Buyer confirms delivery to release payment."></textarea></div>
         <label class="self-opt" for="f-self"><input type="checkbox" id="f-self" name="selfCustody" checked>
           <span><b>Keep my key in this browser</b><small>Your key share is made and stored on this device. Aegis holds only the arbiter's share. Recommended.</small></span></label>
-        <p class="hint">Testnet only. Need coins? <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">Get free TAZ</a>.</p>
+        <p class="hint">Need testnet coins? <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">Get free TAZ</a>.</p>
         <p class="error" id="newError" hidden></p>
       </div>
       <div class="sheet-foot">
@@ -186,8 +189,10 @@
     catch (x) { toast(x.message); }
   }
 
+  const CLOSED = ["released", "refunded"];
+
   function selfCustodyBlocks(d) {
-    if (d.mode !== "self" || d.role === "arbiter") return "";
+    if (d.mode !== "self" || d.role === "arbiter" || CLOSED.includes(d.status)) return "";
     const mine = signer && signer.hasKey(d.id, d.role);
     const pending = signer && signer.inProgress(d.id, d.role);
     let html = "";
@@ -338,6 +343,7 @@
 
   function renderDeal(d, fresh) {
     current = d;
+    const closed = CLOSED.includes(d.status);
     document.body.dataset.space = d.role;
     const [statusText, tone] = STATUS[d.status] || [d.status, "wait"];
     const price = Number(d.priceZec);
@@ -365,7 +371,12 @@
         <div class="col">
           ${selfCustodyBlocks(d)}
           ${d.status === "setting_up" && d.mode !== "self" ? `<section class="glass block"><h2 class="h-sm">Making the three keys</h2><p class="muted">Buyer, seller and arbiter shares are being created in a FROST key ceremony. About a minute.</p><pre class="log" id="jobLog">Starting…</pre></section>` : ""}
-          ${d.escrow ? `<section class="glass block"><div class="pay">
+          ${d.escrow && closed ? `<section class="glass block"><span class="eyebrow space">Settled</span>
+              <h2 class="h-md">${d.status === "released" ? "Paid to the seller" : "Refunded to the buyer"}</h2>
+              <p class="muted">The escrow paid out its balance, minus the network fee, shielded the whole way. Nothing more can move; this deal is closed.</p>
+              <div class="keyline"><code>${esc(d.escrow.address)}</code>${copyBtn(d.escrow.address)}</div>
+            </section>` : ""}
+          ${d.escrow && !closed ? `<section class="glass block"><div class="pay">
               <div class="qr" id="qr" role="img" aria-label="Payment QR code"></div>
               <div class="stack-sm" style="display:grid;gap:10px;min-width:0">
                 <h2 class="h-md">${payTitle}</h2>
@@ -377,11 +388,11 @@
               <div class="keyline"><code>${esc(d.escrow.address)}</code>${copyBtn(d.escrow.address)}</div>
             </section>` : ""}
           ${onboarding(d)}
-          ${needAddr ? `<section class="glass block"><h2 class="h-sm">${d.role === "buyer" ? "Where should a refund go?" : "Where should your payment go?"}</h2>
-            <form class="keyline" id="addrForm"><label class="sr" for="f-myaddr">Shielded address</label><input class="input mono" id="f-myaddr" placeholder="Paste your wallet's utest1… address" required><div class="row-actions"><button class="btn" type="button" id="pasteAddr">Paste</button><button class="btn space">Save</button></div></form>
+          ${needAddr && !closed ? `<section class="glass block"><h2 class="h-sm">${d.role === "buyer" ? "Where should a refund go?" : "Where should your payment go?"}</h2>
+            <form class="keyline" id="addrForm"><label class="sr" for="f-myaddr">Shielded address</label><input class="input mono" id="f-myaddr" placeholder="Paste your wallet's ${d.network === "main" ? "u1" : "utest1"}… address" required><div class="row-actions"><button class="btn" type="button" id="pasteAddr">Paste</button><button class="btn space">Save</button></div></form>
             <p class="error" id="addrError" hidden></p></section>` : ""}
           ${d.txs && d.txs.length ? `<section class="glass block"><h2 class="h-sm">On-chain record</h2>${d.txs.map((t) => `<div class="tx"><div class="tx-head"><b>${t.action === "release" ? "Released to seller" : "Refunded to buyer"}</b><span class="faint">signed by ${t.signers.map((s) => ROLE[s]).join(" + ")}</span></div><code class="txid">${esc(t.txid || "pending")}</code></div>`).join("")}</section>` : ""}
-          ${d.escrow ? `<details class="glass block"><summary>Audit this escrow</summary><p class="muted">The viewing key shows the escrow's activity in any Ironwood testnet wallet. It can never spend.</p><div class="keyline"><code>${esc(d.escrow.ufvk)}</code>${copyBtn(d.escrow.ufvk)}</div></details>` : ""}
+          ${d.escrow ? `<details class="glass block"><summary>Audit this escrow</summary><p class="muted">The viewing key shows the escrow's activity in any Ironwood ${d.network === "main" ? "mainnet" : "testnet"} wallet. It can never spend.</p><div class="keyline"><code>${esc(d.escrow.ufvk)}</code>${copyBtn(d.escrow.ufvk)}</div></details>` : ""}
         </div>
         <div class="col">
           ${["funded", "disputed"].includes(d.status) ? `<section class="glass decide"><span class="eyebrow space">${d.status === "disputed" ? "Dispute" : "Your call"}</span>
@@ -400,7 +411,7 @@
     else { dock.hidden = true; dock.innerHTML = ""; $(".decide-actions")?.classList.remove("has-dock"); }
 
     wireCopy();
-    if (d.escrow && window.QRCode && !(d.role === "buyer" && d.mode === "self" && d.status === "awaiting_funds" && !backedUpKey(d))) new QRCode($("#qr"), { text: `zcash:${d.escrow.address}?amount=${price}&message=${encodeURIComponent("Aegis Gate: " + d.title)}`, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
+    if (d.escrow && $("#qr") && window.QRCode && !(d.role === "buyer" && d.mode === "self" && d.status === "awaiting_funds" && !backedUpKey(d))) new QRCode($("#qr"), { text: `zcash:${d.escrow.address}?amount=${price}&message=${encodeURIComponent("Aegis Gate: " + d.title)}`, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
     $("#refresh")?.addEventListener("click", async (e) => {
       e.target.disabled = true; e.target.textContent = "Checking…";
       try { renderDeal(await api(`/api/deals/${d.id}/refresh?t=${tq()}`, { method: "POST" })); toast("Balance updated"); } catch (x) { toast(x.message); e.target.disabled = false; e.target.textContent = "Check now"; }
@@ -484,8 +495,14 @@
   async function load(fresh, refresh) {
     const id = params.get("id");
     try {
-      if (!signer) await useSigner().catch(() => null);
-      renderDeal(refresh ? await api(`/api/deals/${id}/refresh?t=${tq()}`, { method: "POST" }) : await api(`/api/deals/${id}?t=${tq()}`), fresh);
+      const [d] = await Promise.all([api(`/api/deals/${id}?t=${tq()}`), signer ? null : useSigner().catch(() => null)]);
+      renderDeal(d, fresh);
+      if (refresh && d.escrow && !CLOSED.includes(d.status)) {
+        // A chain sync can take several seconds (longer on mainnet); the page is already usable.
+        api(`/api/deals/${id}/refresh?t=${tq()}`, { method: "POST" })
+          .then((r) => { if (current && current.id === r.id && current.status === r.status && !document.querySelector("form:focus-within")) renderDeal(r, fresh); })
+          .catch(() => {});
+      }
     } catch (x) {
       dock.hidden = true;
       view.innerHTML = `<section class="glass block"><h1 class="h-lg">Can't open this deal</h1><p class="muted">${esc(x.message)}</p><div class="row-actions"><button class="btn primary" id="again">Start a new escrow</button></div></section>`;
@@ -516,6 +533,7 @@
     [...params.keys()].forEach((k) => params.delete(k));
     new URLSearchParams(location.search).forEach((v, k) => params.set(k, v));
     clearTimeout(pollTimer);
+    if (params.get("id") && !signer) useSigner().catch(() => null); // load while the engine is checked
     if (!(await checkEngine())) {
       dock.hidden = true;
       view.innerHTML = `<section class="glass block"><span class="eyebrow">Reconnecting</span><h1 class="h-lg">One moment.</h1><p class="muted">The escrow engine is restarting or your connection dropped. Your funds are safe on the Zcash network. This page reconnects on its own.</p><p class="faint" id="retryNote">Trying again in 10 seconds…</p></section>`;

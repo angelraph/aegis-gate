@@ -64,15 +64,15 @@
   <div class="faq-group">
     <span class="eyebrow">Using it</span>
     <details class="qa glass"><summary>Where do I get testnet ZEC?</summary><div class="a"><p>The <a href="https://faucet.testnet.valargroup.dev">Valar testnet faucet</a> gives 0.125 TAZ per day. Use a wallet that supports Zcash testnet and the Ironwood pool.</p></div></details>
-    <details class="qa glass"><summary>Why can't I release right after paying?</summary><div class="a"><p>Zcash wallets wait about 10 blocks, roughly 12 minutes on testnet, before received funds can move. The deal page shows "confirming" until then, and the buttons work as soon as it's done.</p></div></details>
+    <details class="qa glass"><summary>Why can't I release right after paying?</summary><div class="a"><p>Zcash wallets wait about 10 blocks, roughly 12 minutes, before received funds can move. The deal page shows "confirming" until then, and the buttons work as soon as it's done.</p></div></details>
     <details class="qa glass"><summary>Signing got stuck. What do I do?</summary><div class="a"><p>If your browser shows a signing error, for example after the page was closed mid-signature, press <b>Restart signing</b> on the deal page. Nothing has been sent yet, so the deal goes back to waiting for approvals; both people approve again and sign fresh. Money never moves on a half-finished signature.</p></div></details>
-    <details class="qa glass"><summary>What address should I use?</summary><div class="a"><p>A shielded unified address from your wallet. On testnet it starts with <code>utest1</code> or <code>zutest1</code>. Transparent addresses aren't accepted, so your payout stays private.</p></div></details>
+    <details class="qa glass"><summary>What address should I use?</summary><div class="a"><p>A shielded unified address from your wallet. On mainnet it starts with <code>u1</code>; on testnet with <code>utest1</code> or <code>zutest1</code>. Transparent addresses aren't accepted, so your payout stays private.</p></div></details>
   </div>
 
   <div class="faq-group">
     <span class="eyebrow">Under the hood</span>
     <details class="qa glass"><summary>What is FROST?</summary><div class="a"><p>Flexible Round-Optimized Schnorr Threshold signatures. A group of people jointly creates one key, each keeping a share, and any threshold of them can sign together. Zcash supports it through <a href="https://zips.z.cash/zip-0312">ZIP 312</a>, and the Zcash Foundation maintains the audited implementation Aegis Gate uses.</p></div></details>
-    <details class="qa glass"><summary>Has it worked on-chain?</summary><div class="a"><p>Yes. On 5 October 2026 a 2-of-3 escrow was funded in block 4,465,795 and released by buyer + seller in block 4,465,954, on testnet after the NU7 upgrade. The transactions and the viewing key are on the <a href="/docs.html#proof">proof page</a>.</p></div></details>
+    <details class="qa glass"><summary>Has it worked on-chain?</summary><div class="a"><p>Yes, on both networks. On 5 October 2026 the first 2-of-3 escrow was funded in testnet block 4,465,795 and released by buyer + seller in block 4,465,954, after the NU7 upgrade. The same day, the first Aegis Gate escrow on mainnet was released by buyer + seller, with keys only in their browsers, in mainnet block 3,506,939. The transactions and the viewing key are on the <a href="/docs.html#proof">proof page</a>.</p></div></details>
     <details class="qa glass"><summary>Is the code open source?</summary><div class="a"><p>Yes, under MIT or Apache-2.0, at <a href="https://github.com/angelraph/aegis-gate">github.com/angelraph/aegis-gate</a>.</p></div></details>
   </div>
 </main>
