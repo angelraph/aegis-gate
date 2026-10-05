@@ -1,0 +1,25 @@
+[package]
+name = "aegis-wasm"
+version = "0.1.0"
+description = "Aegis Gate browser signer: 2-of-3 FROST (RedPallas, rerandomized) key ceremony and signing in WebAssembly"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Same reddsa revision as ZcashFoundation/frost-tools, so shares and signatures are
+# interchangeable with frost-client and valid as Orchard/Ironwood spend authorization.
+reddsa = { git = "https://github.com/ZcashFoundation/reddsa.git", rev = "ed49e9ca0699a6450f6d4a9fe62ff168f5ea1ead", default-features = false, features = ["frost", "std"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+getrandom = { version = "0.2", features = ["js"] }
+serde = "1"
+serde_json = "1"
+hex = "0.4"
+wasm-bindgen = "0.2"
+
+[dev-dependencies]
+aegis-core = { path = "../core" }
+zcash_protocol = { workspace = true }
