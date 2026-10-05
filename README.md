@@ -1,4 +1,8 @@
+<p align="center"><img src="apps/web/brand/logo.svg" alt="Aegis Gate. Private trades. Real trust. On Zcash." width="420"></p>
+
 # Aegis Gate
+
+**Live:** https://aegis-gate-zec.vercel.app
 
 **Private escrow for strangers, on shielded Zcash.** ZECATHON · Wildcard track
 
@@ -26,6 +30,7 @@ between strangers, protected without trusting anyone. Aegis Gate is the trust la
 | Escrow funded on Ironwood, watched view-only (no one holds the spending key) | ✅ | tx `669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef`, block 4,465,795 |
 | Buyer + seller FROST signature verified against `rk = ak + [α]G` (the consensus check) | ✅ | `aegis verify-sig` |
 | Release: PCZT built → proven → 2-of-3 FROST signed → broadcast on Ironwood | ✅ | tx `1b980aaa5dfd2ee811f824688c7c5b264aaa1b87aa940dddc99d3697b11e8bdf`, block 4,465,954: 0.10 TAZ to the seller |
+| Full deal through the web app: create → fund → buyer + seller approve → 2-of-3 payout | ✅ | tx `af093f5660469a67369d776a45674b17971a16f96f4231f6196800fc095f4526`, block 4,466,046 |
 | Forged / malformed / tampered signatures rejected | ✅ | `cargo test` (7 tests) |
 
 Testnet activated **NU7 at height 4,465,026**, hours before this escrow was funded. No

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Aegis Gate">
+  <defs>
+    <linearGradient id="ag-silver" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".55" stop-color="#d9dbe6"/>
+      <stop offset="1" stop-color="#9a9fb4"/>
+    </linearGradient>
+    <linearGradient id="ag-silver-2" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f5fa"/>
+      <stop offset="1" stop-color="#8f94aa"/>
+    </linearGradient>
+    <linearGradient id="ag-gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f0a91c"/>
+      <stop offset=".5" stop-color="#f7cf3d"/>
+      <stop offset="1" stop-color="#f4b728"/>
+    </linearGradient>
+  </defs>
+  <!-- orbit, back half -->
+  <path d="M8.5 40.5C5.5 37 9 31.5 17 27.5" fill="none" stroke="url(#ag-gold)" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- shield -->
+  <path d="M32 4.5 51.5 11.2v15.6c0 13.6-8.3 24.3-19.5 30.2C20.8 51.1 12.5 40.4 12.5 26.8V11.2L32 4.5Z" fill="none" stroke="url(#ag-silver)" stroke-width="5.2" stroke-linejoin="round"/>
+  <!-- gate -->
+  <path d="M32 18.5 40.5 24v21.5L32 50.2 23.5 45.5V24L32 18.5Z" fill="#0b0d14" stroke="url(#ag-silver-2)" stroke-width="4.4" stroke-linejoin="round"/>
+  <!-- star -->
+  <path d="M32 27.6c.6 3.1 1.6 4.1 4.6 4.7-3 .6-4 1.6-4.6 4.7-.6-3.1-1.6-4.1-4.6-4.7 3-.6 4-1.6 4.6-4.7Z" fill="url(#ag-gold)"/>
+  <!-- orbit, front half -->
+  <path d="M17 41.5c11 2.5 30-3.5 39.5-17 2.2-3.2 1.6-5.3-1.2-5.6" fill="none" stroke="url(#ag-gold)" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

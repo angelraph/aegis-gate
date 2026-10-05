@@ -5,7 +5,7 @@
 **One-liner:** Private escrow for strangers on shielded Zcash. Buyer, seller and an arbiter each hold one share of a 2-of-3 FROST key; any two can move the funds, no one alone can, and the money never leaves the Ironwood shielded pool.
 
 **Repo:** https://github.com/angelraph/aegis-gate
-**Demo page:** DEMO_URL
+**Live app:** https://aegis-gate-zec.vercel.app
 
 ## The problem
 Zcash has no smart contracts, so it has no escrow. Every private trade between two people who don't know each other comes down to "you send first and hope." That is why private commerce on Zcash barely exists, and why most people have no reason to make a shielded transaction to someone else.
@@ -19,6 +19,7 @@ Zcash has no smart contracts, so it has no escrow. Every private trade between t
 ## Proof (Zcash testnet)
 - Escrow funded with 0.125 TAZ: tx `669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef` (block 4,465,795)
 - 2-of-3 release (buyer + seller) to the seller: tx `1b980aaa5dfd2ee811f824688c7c5b264aaa1b87aa940dddc99d3697b11e8bdf` (block 4,465,954)
+- A complete deal through the live web app (create, fund, buyer + seller approve, 2-of-3 payout): tx `af093f5660469a67369d776a45674b17971a16f96f4231f6196800fc095f4526` (block 4,466,046)
 - The escrow's viewing key is published in the README and on the demo page, so anyone can audit both transactions view-only.
 
 ## Why it fits Wildcard
