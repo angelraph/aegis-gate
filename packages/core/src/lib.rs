@@ -9,6 +9,7 @@
 //! browser build.
 
 pub mod escrow;
+pub mod review;
 pub mod signing;
 
 #[derive(Debug, thiserror::Error)]
@@ -27,6 +28,8 @@ pub enum Error {
     InvalidSignature(usize),
     #[error("no action {0} in bundle")]
     NoSuchSpend(usize),
+    #[error("payout review failed: {0}")]
+    Review(String),
     #[error("signature for action {0} rejected: {1}")]
     SignatureRejected(usize, String),
 }

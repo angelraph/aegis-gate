@@ -42,9 +42,14 @@
         <kbd>esc</kbd>
       </div>
       <div class="sheet-body">
+        <fieldset class="net-choice">
+          <legend class="sr">Network</legend>
+          <label><input type="radio" name="network" value="test" checked><span><b>Testnet</b><small>Free test coins. Try everything safely.</small></span></label>
+          <label><input type="radio" name="network" value="main"><span><b>Mainnet <i>beta</i></b><small>Real ZEC. Price from 0.0002 to 0.00045 ZEC (about $0.26 to $0.60).</small></span></label>
+        </fieldset>
         <div class="grid-2">
-          <div class="field"><label for="f-price">Price in ZEC</label><input id="f-price" name="priceZec" inputmode="decimal" placeholder="0.02" required></div>
-          <div class="field"><label for="f-addr">Your payout address</label><input id="f-addr" name="sellerAddress" class="mono" placeholder="utest1… (shielded)" autocomplete="off" required></div>
+          <div class="field"><label for="f-price">Price in ZEC</label><input id="f-price" name="priceZec" inputmode="decimal" placeholder="0.02 (min 0.0002)" required></div>
+          <div class="field"><label for="f-addr">Your payout address</label><input id="f-addr" name="sellerAddress" class="mono" placeholder="utest1… (testnet, shielded)" autocomplete="off" required></div>
         </div>
         <div class="field"><label for="f-terms">Terms the buyer agrees to</label><textarea id="f-terms" name="terms" rows="2" maxlength="2000" placeholder="Ships within 3 days. Buyer confirms delivery to release payment."></textarea></div>
         <label class="self-opt" for="f-self"><input type="checkbox" id="f-self" name="selfCustody" checked>
@@ -159,9 +164,16 @@
     const sg = d.signing;
     const expected = d.payoutAddresses && d.payoutAddresses[sg.action === "release" ? "seller" : "buyer"];
     try {
-      const st = await s.signStep(api, d.id, d.role, tq(), sg, expected);
-      if (el) el.textContent = { committed: "Signature started. Waiting for the other signer…", signed: "You signed. Broadcasting when both signatures are in…", "waiting-others": "Waiting for the other signer…" }[st] || "";
-      if (st === "committed") signTimer = setTimeout(() => load(false), 1500);
+      if (el) el.textContent = "Checking the transaction on this device…";
+      const res = await s.signStep(api, d.id, d.role, tq(), sg, expected, d.network || "test");
+      const v = res.review;
+      const ver = $("#verified");
+      if (v && ver) {
+        ver.hidden = false;
+        ver.innerHTML = `<b>Verified on this device</b><span>Pays <b>${zec(v.payout)} ZEC</b> to the agreed address · network fee ${zec(v.review.fee)} ZEC · from this deal's escrow · every output matches its on-chain commitment</span>`;
+      }
+      if (el) el.textContent = { committed: "Checked and signed round one. Waiting for the other signer…", signed: "You signed. Broadcasting when both signatures are in…", "waiting-others": "Waiting for the other signer…" }[res.state] || "";
+      if (res.state === "committed") signTimer = setTimeout(() => load(false), 1500);
     } catch (x) { if (el) { el.textContent = x.message; el.classList.add("error"); } }
   }
 
@@ -175,6 +187,12 @@
         <p class="muted">Three parties (your browser, the other person's browser, and the arbiter) each make one share of the escrow key. Secret messages between them are sealed end to end; Aegis relays them without being able to read them.</p>
         <p class="ceremony" id="ceremony">Starting…</p></section>`;
     } else if (mine) {
+      const other = d.role === "buyer" ? "seller" : "buyer";
+      html += `<section class="glass block code-card"><span class="eyebrow space">Security code</span>
+        <h2 class="h-md">${d.status === "awaiting_funds" && d.role === "buyer" ? "Before you pay, compare this code with the " + other : "Your deal security code"}</h2>
+        <p class="deal-code" id="dealCode">…</p>
+        <p class="muted">Read it to the ${other} on a call, or compare it in a message. It must match on both screens. If it doesn't, someone tampered with the key setup: don't pay into this escrow.</p>
+        <p class="error" id="codeWarn" hidden></p></section>`;
       html += `<section class="glass block"><div class="mykey"><span class="mykey-dot"></span><div><h2 class="h-sm">Your key share is in this browser</h2><p class="muted">Aegis can't sign for you. Keep a backup in case this browser's data is cleared.</p></div></div>
         <div class="row-actions"><button class="btn" type="button" id="backupKey">Download backup</button></div></section>`;
     } else if (!pending) {
@@ -186,7 +204,8 @@
       const amount = sg.amountZats != null ? `${zec(sg.amountZats)} ZEC` : "the full escrow balance, minus the network fee";
       html += `<section class="glass decide"><span class="eyebrow space">Your signature</span><h2 class="h-md">Pay ${amount}</h2>
         <p class="muted">To the ${sg.action === "release" ? "seller" : "buyer"}'s payout address:</p><code class="txid">${esc(sg.to)}</code>
-        <p class="hint">Your browser checks this is the address agreed for this outcome before signing. Keep this page open until both signatures are in.</p>
+        <p class="verified" id="verified" hidden></p>
+        <p class="hint">Before signing, your browser fetches the transaction itself, rebuilds the escrow from your own key, and checks every output against its on-chain commitment. Keep this page open until both signatures are in.</p>
         <p class="ceremony" id="signState">Checking the request…</p></section>`;
     }
     return html;
@@ -199,6 +218,12 @@
     const sheet = $("#sheet"), form = $("#newForm");
     const close = () => sheet.remove();
     $("#f-title").focus();
+    form.querySelectorAll('input[name="network"]').forEach((r) => r.addEventListener("change", () => {
+      const main = form.network.value === "main";
+      $("#f-addr").placeholder = main ? "u1… (mainnet, shielded)" : "utest1… (testnet, shielded)";
+      $("#f-price").placeholder = main ? "0.0002 to 0.00045" : "0.02 (min 0.0002)";
+      document.body.dataset.net = main ? "main" : "test";
+    }));
     $("#sheetCancel").addEventListener("click", close);
     sheet.addEventListener("click", (e) => { if (e.target === sheet) close(); });
     sheet.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
@@ -208,7 +233,7 @@
       err.hidden = true; btn.disabled = true; btn.textContent = "Creating escrow…";
       try {
         const r = await api("/api/deals", { method: "POST", body: JSON.stringify({
-          title: f.get("title"), priceZec: Number(String(f.get("priceZec")).replace(",", ".")), terms: f.get("terms"), sellerAddress: f.get("sellerAddress"), selfCustody: f.get("selfCustody") === "on",
+          title: f.get("title"), priceZec: Number(String(f.get("priceZec")).replace(",", ".")), terms: f.get("terms"), sellerAddress: f.get("sellerAddress"), selfCustody: f.get("selfCustody") === "on", network: f.get("network") === "main" ? "main" : "test",
         }) });
         close();
         history.pushState(null, "", `/app.html?id=${r.id}&t=${encodeURIComponent(r.seller)}&new=1`);
@@ -263,13 +288,42 @@
     return { btns, confirming };
   }
 
+  // ---------- newcomer onboarding: zero to a first shielded payment ----------
+  const backedUpKey = (d) => { try { return localStorage.getItem(`aegis-gate:backup:${d.id}:${d.role}`) === "1"; } catch { return false; } };
+  const markBackedUp = (d) => { try { localStorage.setItem(`aegis-gate:backup:${d.id}:${d.role}`, "1"); } catch {} };
+  const stepDone = (d, k) => { try { return localStorage.getItem(`aegis-gate:onboard:${d.id}:${k}`) === "1"; } catch { return false; } };
+  const markStep = (d, k, v) => { try { localStorage.setItem(`aegis-gate:onboard:${d.id}:${k}`, v ? "1" : "0"); } catch {} };
+
   function onboarding(d) {
     if (d.role !== "buyer" || d.status !== "awaiting_funds") return "";
-    return `<section class="glass block onboard"><h2 class="h-sm">New to shielded Zcash?</h2><ol>
-      <li><span>Install a wallet that supports Zcash testnet and the Ironwood pool.</span></li>
-      <li><span>Get free test coins at <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">the testnet faucet</a>. Paste your wallet's shielded <code>utest1…</code> address.</span></li>
-      <li><span>Scan the QR code here and send the exact price. That's your first shielded payment, and it buys something real.</span></li>
-    </ol></section>`;
+    const main = d.network === "main";
+    const selfMode = d.mode === "self";
+    const keySafe = !selfMode || backedUpKey(d);
+    const steps = [
+      { k: "wallet", title: "Get a shielded Zcash wallet",
+        body: main
+          ? `Install <a href="https://zodl.com" target="_blank" rel="noopener">Zodl</a> (formerly Zashi) or another wallet that supports the Ironwood pool. Write down its recovery phrase and keep it offline.`
+          : `Use a wallet that supports Zcash <b>testnet</b> and the Ironwood pool. Testnet coins are free and worthless, so this is the safe place to learn.` },
+      selfMode ? { k: "backup", title: "Back up your Aegis key", locked: !backedUpKey(d), auto: true,
+        body: `Your key for this deal lives only in this browser. Save the backup file somewhere safe before any money goes in. <button class="btn sm" type="button" id="onboardBackup">${backedUpKey(d) ? "Backup saved ✓" : "Download backup"}</button>` } : null,
+      { k: "get", title: main ? "Get a little ZEC" : "Get free test ZEC",
+        body: main
+          ? `Buy ZEC on an exchange or swap into ZEC in your wallet. This deal needs <b>${Number(d.priceZec)} ZEC</b> plus about 0.0001 ZEC for the network fee.`
+          : `Paste your wallet's address into the <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">testnet faucet</a>. It sends 0.125 TAZ, enough for this deal.` },
+      { k: "shield", title: "Make sure it's shielded",
+        body: `Shielded ZEC hides who paid whom and how much. Coins from an exchange often arrive <i>transparent</i> (an address starting with <code>t</code>). Tap <b>Shield</b> in your wallet first: the escrow accepts shielded payments only, so your first shielded transaction happens here.` },
+      { k: "pay", title: "Pay into the escrow", body: keySafe ? `Scan the QR code or tap <b>Open in wallet</b>. Your payment is held, shielded, until two of three people sign.` : `Finish the backup step to see the payment details.` },
+    ].filter(Boolean);
+    const done = (s) => s.auto ? !s.locked : s.k === "pay" ? false : stepDone(d, s.k);
+    const count = steps.filter(done).length;
+    return `<section class="glass block onboard-flow" aria-labelledby="ob-h">
+      <div class="ob-head"><span class="eyebrow space">New to Zcash?</span><span class="ob-count">${count}/${steps.length - 1} ready</span></div>
+      <h2 class="h-md" id="ob-h">Your first shielded payment</h2>
+      <ol class="ob-steps">${steps.map((s, i) => `<li data-done="${done(s)}">
+        <label class="ob-check">${s.k === "pay" || s.auto ? `<span class="ob-num">${i + 1}</span>` : `<input type="checkbox" data-step="${s.k}" ${done(s) ? "checked" : ""} aria-label="Mark step ${i + 1} done"><span class="ob-num">${i + 1}</span>`}</label>
+        <div><b>${s.title}</b><p>${s.body}</p></div></li>`).join("")}</ol>
+      <p class="hint">After the deal settles, the payout lands shielded too. To move ZEC to an exchange that needs a transparent address, send it from your wallet to that <code>t…</code> address: that's unshielding.</p>
+    </section>`;
   }
 
   function renderDeal(d, fresh) {
@@ -286,7 +340,7 @@
     view.innerHTML = `
       <section class="glass space-head">
         <div class="space-top"><span class="role-badge"><i>${ROLE[d.role][0]}</i>You're the ${ROLE[d.role].toLowerCase()}</span><span class="status" data-tone="${tone}">${statusText}</span></div>
-        <div class="deal-title"><span class="eyebrow">Deal ${esc(d.id)} · Zcash testnet</span><h1 class="h-lg">${esc(d.title)}</h1>
+        <div class="deal-title"><span class="eyebrow">Deal ${esc(d.id)} · ${d.network === "main" ? '<b class="net-main">Zcash mainnet · beta</b>' : "Zcash testnet"}</span><h1 class="h-lg">${esc(d.title)}</h1>
           <p class="price">${price.toLocaleString("en-US", { maximumFractionDigits: 8 })}<small>ZEC</small></p>
           ${d.terms ? `<p class="terms">${esc(d.terms)}</p>` : ""}</div>
         ${track(d.status)}
@@ -295,7 +349,7 @@
       ${d.invite && (fresh || ["setting_up", "awaiting_funds"].includes(d.status)) ? `<section class="glass block" style="--space:var(--buyer)"><span class="eyebrow space">Next step</span><h2 class="h-md">Send this link to your buyer</h2>
         <p class="muted">It's their private way into the deal: they pay, track and approve from it. Anyone holding it acts as the buyer, so send it directly.</p>
         <div class="keyline"><code>${esc(dealLink(d.id, d.invite.buyer))}</code>${copyBtn(dealLink(d.id, d.invite.buyer), "Copy link")}</div>
-        <p class="hint">This page is your seller link. Bookmark it.</p></section>` : ""}
+        <p class="hint">This page is your seller link. Bookmark it. <b>Trying Aegis alone?</b> Open the buyer link in another tab or on your phone and play both sides.</p></section>` : ""}
 
       <div class="cols">
         <div class="col">
@@ -307,7 +361,8 @@
                 <h2 class="h-md">${payTitle}</h2>
                 <p class="muted">${d.role === "buyer" && d.status === "awaiting_funds" ? `Scan with your wallet, or copy the address, and send exactly ${price} ZEC.` : "A shielded Ironwood address. Only two of the three keys together can move it."}</p>
                 <div class="amount-row"><b>${zec(balTotal)} ZEC</b><span class="faint">${balState}</span><button class="btn sm" id="refresh">Check now</button></div>
-                ${d.status === "awaiting_funds" ? `<div class="row-actions"><a class="btn space" href="zcash:${esc(d.escrow.address)}?amount=${price}&amp;message=${encodeURIComponent("Aegis Gate: " + d.title)}">Open in wallet</a>${copyBtn(`zcash:${d.escrow.address}?amount=${price}`, "Copy payment link")}</div>` : ""}
+                ${d.status === "awaiting_funds" && d.role === "buyer" && d.mode === "self" && !backedUpKey(d) ? `<p class="gate">Back up your Aegis key first (step 2 below). Payment details appear right after.</p>` : ""}
+                ${d.status === "awaiting_funds" && !(d.role === "buyer" && d.mode === "self" && !backedUpKey(d)) ? `<div class="row-actions"><a class="btn space" href="zcash:${esc(d.escrow.address)}?amount=${price}&amp;message=${encodeURIComponent("Aegis Gate: " + d.title)}">Open in wallet</a>${copyBtn(`zcash:${d.escrow.address}?amount=${price}`, "Copy payment link")}</div>` : ""}
               </div></div>
               <div class="keyline"><code>${esc(d.escrow.address)}</code>${copyBtn(d.escrow.address)}</div>
             </section>` : ""}
@@ -328,14 +383,14 @@
           ${d.escrow ? keysPanel(d) : ""}
         </div>
       </div>
-      <p class="fineprint">${d.mode === "self" ? "Self-custody deal: your key share lives only in your browser. Aegis holds just the arbiter's share and can't sign without one of you." : "Engine-signed deal: all three FROST signers run in the Aegis escrow engine, which acts only on two matching approvals from different people."} Testnet. <a href="/docs.html#security">Security model</a></p>`;
+      <p class="fineprint">${d.mode === "self" ? "Self-custody deal: your key share lives only in your browser. Aegis holds just the arbiter's share and can't sign without one of you." : "Engine-signed deal: all three FROST signers run in the Aegis escrow engine, which acts only on two matching approvals from different people."} ${d.network === "main" ? "Mainnet beta: real ZEC, unaudited, deals from 0.0002 to 0.00045 ZEC (about $0.26 to $0.60)." : "Testnet: test coins only."} <a href="/docs.html#security">Security model</a></p>`;
 
     // mobile dock mirrors the decision buttons
     if (btns.length) { dock.innerHTML = btns.slice(0, 2).join(""); dock.hidden = false; dock.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act, b))); }
     else { dock.hidden = true; dock.innerHTML = ""; $(".decide-actions")?.classList.remove("has-dock"); }
 
     wireCopy();
-    if (d.escrow && window.QRCode) new QRCode($("#qr"), { text: `zcash:${d.escrow.address}?amount=${price}&message=${encodeURIComponent("Aegis Gate: " + d.title)}`, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
+    if (d.escrow && window.QRCode && !(d.role === "buyer" && d.mode === "self" && d.status === "awaiting_funds" && !backedUpKey(d))) new QRCode($("#qr"), { text: `zcash:${d.escrow.address}?amount=${price}&message=${encodeURIComponent("Aegis Gate: " + d.title)}`, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
     $("#refresh")?.addEventListener("click", async (e) => {
       e.target.disabled = true; e.target.textContent = "Checking…";
       try { renderDeal(await api(`/api/deals/${d.id}/refresh?t=${tq()}`, { method: "POST" })); toast("Balance updated"); } catch (x) { toast(x.message); e.target.disabled = false; e.target.textContent = "Check now"; }
@@ -350,15 +405,25 @@
       catch { $("#f-myaddr").focus(); toast("Press Ctrl+V or long-press to paste"); }
     });
     view.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act, b)));
+    view.querySelectorAll("[data-step]").forEach((c) => c.addEventListener("change", () => { markStep(d, c.dataset.step, c.checked); renderDeal(d); }));
     if (d.status === "setting_up" && d.setupJob) followJob(d.setupJob);
     if (d.mode === "self" && d.role !== "arbiter") {
       if (d.status === "setting_up" || (signer && signer.inProgress(d.id, d.role))) runCeremony(d);
       if (d.status === "signing" && d.signing && d.signing.mine) runSigning(d);
-      const bk = $("#backupKey");
-      if (bk) bk.addEventListener("click", () => {
+      if (signer && signer.hasKey(d.id, d.role) && d.keys) {
+        signer.securityCode(d.id, d.role, d.keys.boxKeys).then((r) => {
+          const el = $("#dealCode"); if (!el || !r) return;
+          el.textContent = r.code;
+          if (!r.ownIntact) { const w = $("#codeWarn"); w.textContent = "Warning: the key the engine shows for you isn't the one this browser created. Don't pay into this escrow."; w.hidden = false; }
+        });
+      }
+      const doBackup = () => {
         const blob = signer.backupBlob(d.id, d.role); if (!blob) return toast("No key to back up yet");
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `aegis-gate-${d.id}-${d.role}-key.json`; a.click(); toast("Backup downloaded");
-      });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `aegis-gate-${d.id}-${d.role}-key.json`; a.click();
+        markBackedUp(d); toast("Backup downloaded"); renderDeal(d);
+      };
+      const bk = $("#backupKey"); if (bk) bk.addEventListener("click", doBackup);
+      const ob = $("#onboardBackup"); if (ob) ob.addEventListener("click", doBackup);
       const rk = $("#restoreKey");
       if (rk) rk.addEventListener("change", async (e) => {
         try { await signer.restore(d.id, d.role, e.target.files[0], d.groupKey); toast("Key restored"); load(false); }

@@ -440,3 +440,36 @@ details.glass[open] summary::after { content: "–"; }
 .ceremony.error { color: var(--bad); background: color-mix(in oklab, var(--bad) 10%, transparent); }
 .mykey { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; }
 .mykey-dot { width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 5px color-mix(in oklab, var(--ok) 20%, transparent); }
+
+.verified { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; background: color-mix(in oklab, var(--ok) 11%, transparent); border: 1px solid color-mix(in oklab, var(--ok) 35%, transparent); font-size: 0.88rem; color: var(--ink-2); }
+.verified > b { color: var(--ok); font-size: 0.82rem; letter-spacing: .04em; text-transform: uppercase; font-family: var(--mono); }
+
+.deal-code { font: 700 clamp(1.6rem, 6vw, 2.2rem)/1.1 var(--mono); letter-spacing: .12em; color: var(--ink); padding: 14px 16px; border-radius: 14px; background: color-mix(in oklab, var(--space) 10%, transparent); border: 1px dashed color-mix(in oklab, var(--space) 45%, transparent); text-align: center; overflow-wrap: anywhere; }
+
+/* ---------- network choice ---------- */
+.net-choice { border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.net-choice label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px; border-radius: 12px; border: 1px solid var(--line-strong); cursor: pointer; }
+.net-choice label:has(input:checked) { border-color: var(--space); background: color-mix(in oklab, var(--space) 9%, transparent); }
+.net-choice input { margin-top: 3px; accent-color: var(--space); }
+.net-choice b { display: block; font-size: 0.92rem; }
+.net-choice i { font: 600 0.62rem/1 var(--mono); font-style: normal; letter-spacing: .1em; text-transform: uppercase; color: var(--arbiter); border: 1px solid currentColor; padding: 2px 5px; border-radius: 6px; margin-left: 4px; vertical-align: 2px; }
+.net-choice small { display: block; color: var(--ink-3); font-size: 0.8rem; }
+.net-main { color: var(--arbiter); font-weight: 500; }
+@media (max-width: 420px) { .net-choice { grid-template-columns: 1fr; } }
+
+/* ---------- newcomer onboarding ---------- */
+.onboard-flow { gap: 14px; }
+.ob-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.ob-count { font: 500 0.75rem/1 var(--mono); color: var(--ink-3); }
+.ob-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ob-steps li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 12px; border-radius: 12px; }
+.ob-steps li[data-done="true"] { background: color-mix(in oklab, var(--ok) 8%, transparent); }
+.ob-steps li[data-done="true"] .ob-num { background: var(--ok); color: #0b0b12; }
+.ob-steps li div { min-width: 0; display: grid; gap: 4px; }
+.ob-steps p { color: var(--ink-2); font-size: 0.9rem; margin: 0; }
+.ob-steps p a { color: var(--space); }
+.ob-steps code { font: 0.85em var(--mono); }
+.ob-check { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.ob-check input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--ok); }
+.ob-num { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: color-mix(in oklab, var(--space) 16%, transparent); color: var(--space); font: 600 0.8rem/1 var(--mono); flex: none; }
+.gate { font-size: 0.9rem; color: var(--warn); background: color-mix(in oklab, var(--warn) 10%, transparent); padding: 10px 12px; border-radius: 10px; }

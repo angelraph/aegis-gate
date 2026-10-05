@@ -29,17 +29,27 @@
   share. Round-2 key-ceremony packages carry secret shares, so they are sealed end to end
   (ECDH P-256 + HKDF-SHA256 + AES-256-GCM); a relay that could read them could rebuild the
   whole key from its own share plus the two packages addressed to it.
-- **Signing checks (partly done).** The browser refuses to sign unless the payout goes to
-  the address agreed for that outcome and the request is well formed. It does not yet
-  rebuild the PCZT itself to recompute the sighash; until it does, a malicious engine could
-  in principle present a different transaction with the same recipient. Next step.
+- **Signing checks (done).** Before signing, the browser downloads the PCZT and, in WASM,
+  re-derives the escrow from its own group key and the deal ID; checks each action's
+  `cv_net`, each output's note commitment, and that each output's encrypted note decrypts
+  (via the escrow OVK) to the claimed recipient and value; checks each real spend's
+  nullifier and `rk` against the escrow FVK; rejects transparent or Sapling parts and
+  non-zero lock times; recomputes the sighash and randomizers itself; and refuses unless
+  every value-carrying output pays the agreed receiver or returns change to the escrow,
+  with a fee of at most 0.001 ZEC. The signing package's message must equal its own
+  sighash. Tested on real mined PCZTs with 306 single-byte tamperings each: none accepted
+  with a different payout, fee or output.
 - **Engine-signed deals (opt-out).** All three shares run in the engine, which signs only
   on two matching approvals from different people. The operator is trusted.
 - **Key loss.** Clearing browser storage deletes the share. The page offers a backup file;
   with 2-of-3 the other two parties can still complete the deal.
-- **Active relay attack on box keys.** The engine relays each party's box public key. A
-  malicious engine could substitute its own and read round-2 packages. Box-key fingerprints
-  should be compared out of band; the UI will surface them.
+- **Active relay attack on box keys (mitigated).** The engine relays each party's box
+  public key; a malicious engine could substitute its own and read round-2 packages. Each
+  browser shows a deal security code over all three box keys and its own group key, to be
+  compared out of band before paying, and automatically warns if its own box key was
+  altered. A swap that goes unnoticed before funding is the residual risk.
+- **Mainnet beta limits.** Mainnet deals are priced between 0.0002 and 0.00045 ZEC (about
+  $0.26 to $0.60) while the system is unaudited and the engine runs on a single machine.
 - **Viewing key reach.** All three participants hold the escrow UFVK and can see its
   activity. Anyone who learns the group key *and* the deal ID can derive the same UFVK.
   Neither is published.

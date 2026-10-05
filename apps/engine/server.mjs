@@ -28,6 +28,11 @@ const PORT = Number(process.env.PORT || 8787);
 const BASH = process.env.AEGIS_BASH || "C:\\Program Files\\Git\\bin\\bash.exe";
 const DEVTOOL = join(process.env.AEGIS_BIN || "", "zcash-devtool.exe");
 const ROLES = ["buyer", "seller", "arbiter"];
+// Mainnet is a beta: real ZEC in an unaudited system, so each deal is capped.
+const MAINNET_CAP_ZEC = Number(process.env.AEGIS_MAINNET_CAP || 0.00045);
+// Smallest price that still pays out: the payout itself costs a ~0.0001 ZEC network fee.
+const MIN_PRICE_ZEC = 0.0002;
+const NETWORKS = { test: { prefixes: ["utest1", "zutest1"], label: "testnet" }, main: { prefixes: ["u1", "zu1"], label: "mainnet" } };
 const ACTIONS = {
   release: { to: "seller", label: "Release to the seller" },
   refund: { to: "buyer", label: "Refund to the buyer" },
@@ -65,7 +70,7 @@ const jobs = new Map();
 function runScript(deal, args, extraEnv = {}) {
   return new Promise((resolve) => {
     const child = spawn(BASH, [SCRIPT, ...args], {
-      env: { ...process.env, AEGIS_WORK: dealDir(deal.id), AEGIS_SHARED: SHARED, AEGIS_DEAL: deal.id, ...extraEnv },
+      env: { ...process.env, AEGIS_WORK: dealDir(deal.id), AEGIS_SHARED: SHARED, AEGIS_DEAL: deal.id, AEGIS_NETWORK: deal.network || "test", ...extraEnv },
       windowsHide: true,
     });
     let out = "";
@@ -123,11 +128,11 @@ async function refreshBalance(deal) {
 }
 
 // ---------- operations ----------
-function createDeal({ title, priceZec, terms, sellerAddress }) {
+function createDeal({ title, priceZec, terms, sellerAddress, network = "test" }) {
   const id = newId();
   mkdirSync(dealDir(id), { recursive: true });
   const deal = {
-    id, title, priceZec, terms, network: "test",
+    id, title, priceZec, terms, network,
     addresses: { seller: sellerAddress, buyer: null },
     tokens: { buyer: token(), seller: token(), arbiter: token() },
     status: "setting_up", approvals: {}, txs: [], createdAt: new Date().toISOString(),
@@ -202,14 +207,14 @@ function withLock(id, fn) {
   return next;
 }
 
-async function createSelfDeal({ title, priceZec, terms, sellerAddress }) {
+async function createSelfDeal({ title, priceZec, terms, sellerAddress, network = "test" }) {
   const id = newId();
   mkdirSync(dealDir(id), { recursive: true });
   const bk = await box.newBoxKey();
   const r1 = J(frost.dkgPart1(ID.arbiter));
   saveArb(id, { boxPrivate: bk.privateJwk, secret1: r1.secret });
   const deal = {
-    id, title, priceZec, terms, network: "test", mode: "self",
+    id, title, priceZec, terms, network, mode: "self",
     addresses: { seller: sellerAddress, buyer: null },
     tokens: { buyer: token(), seller: token(), arbiter: token() },
     status: "setting_up", approvals: {}, txs: [], createdAt: new Date().toISOString(),
@@ -454,7 +459,10 @@ async function readBody(req) {
   if (tooLarge) throw new Error("Request too large.");
   try { return s ? JSON.parse(s) : {}; } catch { throw new Error("The request body isn't valid JSON."); }
 }
-const isAddress = (a) => typeof a === "string" && /^(utest1|zutest1|u1|zu1)[0-9a-z]{40,}$/.test(a.trim());
+const isAddress = (a, network = "test") =>
+  typeof a === "string" && /^[0-9a-z]{40,}$/.test(a.trim()) && NETWORKS[network].prefixes.some((p) => a.trim().startsWith(p)) &&
+  !(network === "main" && a.trim().startsWith("utest"));
+const addressHint = (network) => network === "main" ? "a mainnet shielded unified address (u1…)" : "a testnet shielded unified address (utest1…)";
 
 const server = createServer(async (req, res) => {
   if (req.method === "OPTIONS") return send(res, 204, {});
@@ -464,16 +472,19 @@ const server = createServer(async (req, res) => {
   try {
     if (parts[0] !== "api") return send(res, 404, { error: "Not found." });
 
-    if (parts[1] === "health") return send(res, 200, { ok: true, network: "test", deals: readdirSync(DEALS).length });
+    if (parts[1] === "health") return send(res, 200, { ok: true, networks: ["test", "main"], mainnetCapZec: MAINNET_CAP_ZEC, minPriceZec: MIN_PRICE_ZEC, deals: readdirSync(DEALS).length });
 
     if (parts[1] === "deals" && parts.length === 2 && req.method === "POST") {
       const b = await readBody(req);
       const title = String(b.title || "").trim().slice(0, 120);
       const priceZec = Number(b.priceZec);
       if (!title) return send(res, 400, { error: "Give the deal a name." });
+      const network = b.network === "main" ? "main" : "test";
       if (!(priceZec > 0 && priceZec < 21e6)) return send(res, 400, { error: "Enter a price above 0 ZEC." });
-      if (!isAddress(b.sellerAddress)) return send(res, 400, { error: "Enter a shielded unified address for the seller payout (utest1…)." });
-      const input = { title, priceZec, terms: String(b.terms || "").slice(0, 2000), sellerAddress: b.sellerAddress.trim() };
+      if (priceZec < MIN_PRICE_ZEC) return send(res, 400, { error: `The price must be at least ${MIN_PRICE_ZEC} ZEC, so the escrow can cover the network fee when it pays out.` });
+      if (network === "main" && priceZec > MAINNET_CAP_ZEC) return send(res, 400, { error: `Mainnet beta: the price must be between ${MIN_PRICE_ZEC} and ${MAINNET_CAP_ZEC} ZEC (about $0.26 to $0.60).` });
+      if (!isAddress(b.sellerAddress, network)) return send(res, 400, { error: `Enter ${addressHint(network)} for the seller payout.` });
+      const input = { title, priceZec, terms: String(b.terms || "").slice(0, 2000), sellerAddress: b.sellerAddress.trim(), network };
       const d = b.selfCustody ? await createSelfDeal(input) : createDeal(input);
       return send(res, 201, { id: d.id, seller: d.tokens.seller, buyer: d.tokens.buyer, setupJob: d.setupJob || null, mode: d.mode || "engine" });
     }
@@ -509,6 +520,15 @@ const server = createServer(async (req, res) => {
         return send(res, 200, view(d, role));
       }
 
+      // The transaction itself, for the two signers' browsers to review independently.
+      if (parts[3] === "pczt" && deal.mode === "self" && req.method === "GET") {
+        const sg = deal.signing;
+        if (!sg || deal.status !== "signing") return send(res, 400, { error: "There's nothing to sign right now." });
+        if (!sg.signers.includes(role) || role === "arbiter") return send(res, 403, { error: "You're not one of the two signers for this payout." });
+        const pczt = readFileSync(join(sg.txdir, "proven.pczt")).toString("base64");
+        return send(res, 200, { session: sg.id, network: deal.network, pczt });
+      }
+
       if (parts[3] === "sign" && deal.mode === "self" && req.method === "POST") {
         const b = await readBody(req);
         const r = await withLock(deal.id, async () => { const x = load(deal.id); const job = signMessage(x, role, b); save(x); return { x, job }; });
@@ -520,7 +540,7 @@ const server = createServer(async (req, res) => {
       if (parts[3] === "address" && req.method === "POST") {
         const b = await readBody(req);
         if (role === "arbiter") return send(res, 400, { error: "The arbiter doesn't receive payouts." });
-        if (!isAddress(b.address)) return send(res, 400, { error: "Enter a shielded unified address (utest1…)." });
+        if (!isAddress(b.address, deal.network || "test")) return send(res, 400, { error: `Enter ${addressHint(deal.network || "test")}.` });
         deal.addresses[role] = b.address.trim();
         save(deal);
         return send(res, 200, view(deal, role));

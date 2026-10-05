@@ -141,6 +141,38 @@ pub fn verify(public_key_package: &str, alpha_hex: &str, message_hex: &str, sig_
     Ok(params.randomized_verifying_key().verify(&msg, &sig).is_ok())
 }
 
+// ---------------------------------------------------------------- payout review
+
+/// Highest fee a signer will accept, in zatoshis (0.001 ZEC). ZIP 317 fees for an escrow
+/// payout are around 0.0001 ZEC.
+pub const MAX_FEE_ZATS: u64 = 100_000;
+
+/// Review a payout PCZT entirely on this device and apply the signing policy.
+///
+/// `group_key` is the FROST group key this signer computed itself; `expected_to` is the
+/// payout address agreed for the outcome being signed. Returns the review plus `ok` and,
+/// if not ok, the reasons. Only `ok == true` reviews may be signed, and only the sighash
+/// and randomizers returned here may be used.
+pub fn review_payout(pczt_b64: &str, group_key: &str, deal_id: &str, network: &str, expected_to: &str) -> R<String> {
+    use base64::Engine as _;
+    let bytes = base64::engine::general_purpose::STANDARD.decode(pczt_b64.trim()).map_err(err("pczt encoding"))?;
+    let net = match network { "main" => zcash_protocol::consensus::NetworkType::Main, "test" => zcash_protocol::consensus::NetworkType::Test, _ => return Err("unknown network".into()) };
+    let ak = hex::decode(group_key.trim()).map_err(err("group key"))?;
+    let r = aegis_core::review::review(&bytes, &ak, deal_id.as_bytes(), net).map_err(|e| e.to_string())?;
+    let want = hex::encode(aegis_core::escrow::orchard_receiver_of(expected_to).map_err(|e| e.to_string())?);
+
+    let mut reasons = vec![];
+    let mut payout: u64 = 0;
+    for o in &r.outputs {
+        if o.receiver == want { payout += o.value; }
+        else if !o.to_escrow { reasons.push(format!("{} zats would go to an address nobody agreed to ({})", o.value, o.address)); }
+    }
+    if payout == 0 { reasons.push("nothing is paid to the agreed address".into()); }
+    if r.fee > MAX_FEE_ZATS { reasons.push(format!("the fee ({} zats) is too high", r.fee)); }
+    if r.spends.is_empty() { reasons.push("there is nothing to sign".into()); }
+    Ok(json!({ "ok": reasons.is_empty(), "reasons": reasons, "payout": payout, "review": to_json(&r)? }).to_string())
+}
+
 // ---------------------------------------------------------------- JS bindings
 
 fn js<T>(r: R<T>) -> Result<T, JsError> { r.map_err(|e| JsError::new(&e)) }
@@ -159,5 +191,7 @@ pub fn js_signing_package(commitments: &str, message_hex: &str) -> Result<String
 pub fn js_sign_share(signing_pkg: &str, nonces: &str, key_package: &str, alpha_hex: &str) -> Result<String, JsError> { js(sign_share(signing_pkg, nonces, key_package, alpha_hex)) }
 #[wasm_bindgen(js_name = aggregate)]
 pub fn js_aggregate(signing_pkg: &str, shares: &str, public_key_package: &str, alpha_hex: &str) -> Result<String, JsError> { js(aggregate(signing_pkg, shares, public_key_package, alpha_hex)) }
+#[wasm_bindgen(js_name = reviewPayout)]
+pub fn js_review_payout(pczt_b64: &str, group_key: &str, deal_id: &str, network: &str, expected_to: &str) -> Result<String, JsError> { js(review_payout(pczt_b64, group_key, deal_id, network, expected_to)) }
 #[wasm_bindgen(js_name = verify)]
 pub fn js_verify(public_key_package: &str, alpha_hex: &str, message_hex: &str, sig_hex: &str) -> Result<bool, JsError> { js(verify(public_key_package, alpha_hex, message_hex, sig_hex)) }

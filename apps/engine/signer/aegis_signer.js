@@ -121,6 +121,44 @@ function dkgPart3(secret2, round1, round2) {
 exports.dkgPart3 = dkgPart3;
 
 /**
+ * @param {string} pczt_b64
+ * @param {string} group_key
+ * @param {string} deal_id
+ * @param {string} network
+ * @param {string} expected_to
+ * @returns {string}
+ */
+function reviewPayout(pczt_b64, group_key, deal_id, network, expected_to) {
+    let deferred7_0;
+    let deferred7_1;
+    try {
+        const ptr0 = passStringToWasm0(pczt_b64, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(group_key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ptr2 = passStringToWasm0(deal_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len2 = WASM_VECTOR_LEN;
+        const ptr3 = passStringToWasm0(network, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len3 = WASM_VECTOR_LEN;
+        const ptr4 = passStringToWasm0(expected_to, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len4 = WASM_VECTOR_LEN;
+        const ret = wasm.reviewPayout(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
+        var ptr6 = ret[0];
+        var len6 = ret[1];
+        if (ret[3]) {
+            ptr6 = 0; len6 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred7_0 = ptr6;
+        deferred7_1 = len6;
+        return getStringFromWasm0(ptr6, len6);
+    } finally {
+        wasm.__wbindgen_free(deferred7_0, deferred7_1, 1);
+    }
+}
+exports.reviewPayout = reviewPayout;
+
+/**
  * @param {string} key_package
  * @returns {string}
  */

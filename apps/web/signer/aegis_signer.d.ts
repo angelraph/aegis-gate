@@ -9,6 +9,8 @@ export function dkgPart2(secret1: string, round1: string): string;
 
 export function dkgPart3(secret2: string, round1: string, round2: string): string;
 
+export function reviewPayout(pczt_b64: string, group_key: string, deal_id: string, network: string, expected_to: string): string;
+
 export function signCommit(key_package: string): string;
 
 export function signShare(signing_pkg: string, nonces: string, key_package: string, alpha_hex: string): string;
@@ -25,10 +27,15 @@ export interface InitOutput {
     readonly dkgPart1: (a: number) => [number, number, number, number];
     readonly dkgPart2: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly dkgPart3: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly reviewPayout: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
     readonly signCommit: (a: number, b: number) => [number, number, number, number];
     readonly signShare: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly signingPackage: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly verify: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number];
+    readonly rustsecp256k1_v0_14_default_error_callback_fn: (a: number, b: number) => void;
+    readonly rustsecp256k1_v0_14_default_illegal_callback_fn: (a: number, b: number) => void;
+    readonly rustsecp256k1_v0_14_context_destroy: (a: number) => void;
+    readonly rustsecp256k1_v0_14_context_create: (a: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;

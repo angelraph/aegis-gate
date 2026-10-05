@@ -69,10 +69,32 @@ pub fn derive(ak: &[u8], deal_id: &[u8], network: NetworkType) -> Result<EscrowK
     Ok(EscrowKeys { address, ufvk })
 }
 
+/// The Orchard/Ironwood receiver inside a unified address (any revision), as raw bytes.
+/// Two different unified-address strings can share the same receiver, so payouts are
+/// matched on this, never on the string.
+pub fn orchard_receiver_of(address: &str) -> Result<[u8; 43], Error> {
+    use zcash_address::unified::Container;
+    let (_, _, ua) = unified::Address::decode(address.trim()).map_err(|e| Error::Key(format!("not a unified address: {e}")))?;
+    ua.items()
+        .into_iter()
+        .find_map(|item| match item { unified::Receiver::Orchard(r) => Some(r), _ => None })
+        .ok_or_else(|| Error::Key("that address has no Orchard/Ironwood receiver".into()))
+}
+
+/// Encode a raw 43-byte Orchard/Ironwood receiver as a ZIP 316 Revision 0 unified address.
+pub fn encode_receiver(receiver: [u8; 43], network: NetworkType) -> Result<String, Error> {
+    let ua = unified::Address::try_from_items(
+        unified::Revision::R0,
+        vec![Uitem::Data(unified::Receiver::Orchard(receiver))],
+    )
+    .map_err(|e| Error::Key(format!("unified address: {e}")))?;
+    Ok(ZcashAddress::from_unified(network, ua).encode())
+}
+
 /// The escrow's Orchard full viewing key: `ak` from the FROST group, `nk` and `rivk`
 /// from the deterministic throwaway spending key. Assembled through the 96-byte
 /// `ak || nk || rivk` encoding, which `FullViewingKey::from_bytes` validates.
-fn full_viewing_key(ak: &[u8], deal_id: &[u8]) -> Result<FullViewingKey, Error> {
+pub fn full_viewing_key(ak: &[u8], deal_id: &[u8]) -> Result<FullViewingKey, Error> {
     let ak = SpendValidatingKey::from_bytes(ak).ok_or(Error::InvalidGroupKey)?;
     let mut bytes = FullViewingKey::from(&viewing_sk(&ak, deal_id)).to_bytes();
     bytes[..32].copy_from_slice(&ak.to_bytes());

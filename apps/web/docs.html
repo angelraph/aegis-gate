@@ -52,7 +52,7 @@
       <h1>Escrow for shielded Zcash</h1>
       <p>Zcash has no smart contracts, so it has no escrow. When two strangers trade privately, one of them has to pay first and hope. Aegis Gate removes that leap of faith without a custodian and without leaving the shielded pool.</p>
       <p>Every deal gets its own escrow: an Ironwood shielded address whose spending authority is a <b>2-of-3 FROST key</b> (<a href="https://zips.z.cash/zip-0312">ZIP 312</a>). The buyer, the seller and an arbiter each hold one share. Any two shares together can produce the one signature that moves the money. A single share can't.</p>
-      <div class="callout"><b>Testnet build.</b> Aegis Gate runs on Zcash testnet with test coins (TAZ). Don't send mainnet ZEC to an escrow address.</div>
+      <div class="callout"><b>Two networks.</b> <b>Testnet</b> uses free test coins (TAZ) and has no limits beyond a 0.0002 minimum. <b>Mainnet beta</b> uses real ZEC, with every deal priced between 0.0002 and 0.00045 ZEC (about $0.26 to $0.60), so anyone can try it without real risk. Never send more than the deal price to an escrow.</div>
     </section>
 
     <section id="quickstart">
@@ -118,7 +118,9 @@
         <li><b>Shielded end to end.</b> Funding and payout are Ironwood shielded transactions. Observers see that a transaction happened and its fee, nothing else.</li>
         <li><b>Signatures checked before broadcast.</b> Each FROST signature is verified against the spend's randomized key before the transaction is assembled.</li>
       </ul>
-      <div class="callout"><b>Your key stays in your browser.</b> New deals are self-custody by default: the buyer's and seller's FROST shares are created and kept in their own browsers (WebAssembly), and the engine holds only the arbiter's share. Secret key-ceremony messages are sealed end to end, so the engine relays them without being able to read them. Before your browser signs, it checks the payout goes to the address agreed for that outcome. Read the full <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">threat model</a>.</div>
+      <div class="callout"><b>Your key stays in your browser, and your browser checks everything it signs.</b> New deals are self-custody by default: the buyer's and seller's FROST shares are created and kept in their own browsers (WebAssembly), and the engine holds only the arbiter's share. Secret key-ceremony messages are sealed end to end. Before signing, your browser fetches the transaction itself, rebuilds the escrow from your own key, checks every output against its on-chain note commitment and encrypted note, recomputes the sighash, and refuses anything that pays an address nobody agreed to, has a high fee, or is time-locked. Read the full <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">threat model</a>.</div>
+      <h3>Security code</h3>
+      <p>Once the keys are made, buyer and seller each see the same short security code, computed from all three parties' encryption keys and the escrow key. Compare it on a call or in a message before paying. If the codes differ, someone interfered with the key setup: don't pay into that escrow. Your browser also warns you automatically if the key shown for you isn't the one it created.</p>
       <h3>Two deal modes</h3>
       <ul>
         <li><b>Self-custody</b> (default): buyer and seller hold their own shares. Aegis can't sign without one of you.</li>
@@ -129,7 +131,6 @@
         <li>The arbiter plus one side can decide the outcome. That's what 2-of-3 escrow means; pick an arbiter you're comfortable with.</li>
         <li>Anyone with your deal link acts as you. Share it only privately.</li>
         <li>Viewing keys built from a FROST group key aren't quantum-recoverable, so escrows are meant to be short-lived.</li>
-        <li>Your browser checks the payout address and the signing request's shape. It doesn't yet rebuild the whole transaction itself to recompute what it signs; that's the next step.</li>
         <li>If you clear your browser data, your share is gone. Download the backup; with 2-of-3, the other two keys can still complete the deal.</li>
       </ul>
     </section>
@@ -184,7 +185,7 @@ cargo build --release -p aegis-core
     <section id="roadmap">
       <h2>Roadmap</h2>
       <ol>
-        <li><b>Full transaction check in the browser.</b> Your browser already holds your key and checks the payout address; next it rebuilds the transaction itself and recomputes exactly what it signs.</li>
+        <li><b>Always-on engine.</b> Today the escrow engine runs on one machine; a hosted engine removes downtime.</li>
         <li><b>Choice of arbiter.</b> Pick an independent arbiter per deal.</li>
         <li><b>First purchase as onboarding.</b> Set up a wallet, get ZEC and shield it inside your first deal.</li>
         <li><b>Mainnet.</b> Small real trades with the community, each auditable through its viewing key.</li>

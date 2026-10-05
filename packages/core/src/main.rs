@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 
-use aegis_core::{escrow, signing};
+use aegis_core::{escrow, review, signing};
 use clap::{Parser, Subcommand};
 use eyre::{eyre, Result, WrapErr};
 use zcash_protocol::consensus::NetworkType;
@@ -30,6 +30,17 @@ enum Command {
     /// Print the sighash and per-spend randomizers the FROST group must sign.
     Inspect {
         pczt: PathBuf,
+    },
+    /// Independently review a payout PCZT for an escrow before signing it.
+    Review {
+        pczt: PathBuf,
+        /// Hex FROST group key (the signer's own).
+        #[arg(long)]
+        ak: String,
+        #[arg(long)]
+        deal: String,
+        #[arg(long, default_value = "test")]
+        network: String,
     },
     /// Verify a FROST signature against the group key randomized by alpha.
     VerifySig {
@@ -67,6 +78,11 @@ fn main() -> Result<()> {
             print(&escrow::derive(&ak, deal.as_bytes(), network)?)
         }
         Command::Inspect { pczt } => print(&signing::inspect(&read(&pczt)?)?),
+        Command::Review { pczt, ak, deal, network } => {
+            let network = if network == "main" { NetworkType::Main } else { NetworkType::Test };
+            let ak = hex::decode(ak.trim()).wrap_err("ak is not hex")?;
+            print(&review::review(&read(&pczt)?, &ak, deal.as_bytes(), network)?)
+        }
         Command::VerifySig { ak, alpha, message, signature } => {
             let h = |s: &str| hex::decode(s.trim()).wrap_err("not hex");
             signing::verify(&h(&ak)?, &h(&alpha)?, &h(&message)?, &h(&signature)?)?;
