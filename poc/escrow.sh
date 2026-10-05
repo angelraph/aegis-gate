@@ -25,7 +25,9 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 WORK="${AEGIS_WORK:-$HERE/.work}"
+WORK="$(cygpath -u "$WORK" 2>/dev/null || echo "$WORK")"   # engine passes Windows paths
 SHARED="${AEGIS_SHARED:-$HERE/.work}"   # relay + its TLS cert, shared by all deals
+SHARED="$(cygpath -u "$SHARED" 2>/dev/null || echo "$SHARED")"
 NETWORK="${AEGIS_NETWORK:-test}"
 DEAL="${AEGIS_DEAL:-poc-deal-1}"
 RELAY="127.0.0.1:2744"
@@ -47,7 +49,7 @@ bin() {
   command -v "$name" || { echo "missing binary: $name (set AEGIS_BIN)" >&2; exit 1; }
 }
 
-cfg() { echo "$SHARED/$1.toml"; }
+cfg() { echo "$WORK/$1.toml"; }
 say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
 # Read a value out of a frost-client TOML config.
@@ -186,8 +188,14 @@ cmd_payout() {
   mkdir -p "$tx"
 
   say "Building and proving the payout PCZT"
-  "$dt" pczt -w "$WORK/wallet" create --address "$to" --value "$zats" --memo "$memo" \
-    --output "$tx/created.pczt"
+  if [[ "$zats" == "max" ]]; then
+    # Sweep the escrow: everything spendable goes to the recipient, fee deducted.
+    "$dt" pczt -w "$WORK/wallet" create-max --address "$to" --memo "$memo" \
+      --output "$tx/created.pczt"
+  else
+    "$dt" pczt -w "$WORK/wallet" create --address "$to" --value "$zats" --memo "$memo" \
+      --output "$tx/created.pczt"
+  fi
   "$dt" pczt -w "$WORK/wallet" prove "$tx/created.pczt" --output "$tx/proven.pczt"
   "$dt" pczt -w "$WORK/wallet" inspect < "$tx/proven.pczt" | tee "$tx/inspect.txt" || true
 

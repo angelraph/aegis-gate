@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aegis Gate Docs</title>
+<meta name="description" content="How Aegis Gate's 2-of-3 shielded escrow works, how to use it, and how it's secured.">
+<meta name="theme-color" content="#0a0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2315131f'/%3E%3Ccircle cx='16' cy='9.5' r='3.2' fill='%238e9aff'/%3E%3Ccircle cx='9.5' cy='21' r='3.2' fill='%233fe0b0'/%3E%3Ccircle cx='22.5' cy='21' r='3.2' fill='%23ffb547'/%3E%3C/svg%3E">
+</head>
+<body data-space="seller">
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="/">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><circle cx="16" cy="9.5" r="3.2" fill="var(--buyer)"/><circle cx="9.5" cy="21" r="3.2" fill="var(--seller)"/><circle cx="22.5" cy="21" r="3.2" fill="var(--arbiter)"/></svg>
+    Aegis Gate
+  </a>
+  <div class="nav-links">
+    <a href="/docs.html" aria-current="page">Docs</a>
+    <a href="/faq.html">FAQ</a>
+    <a href="https://github.com/angelraph/aegis-gate">GitHub</a>
+    <a class="btn primary sm" href="/app.html">Open escrow</a>
+  </div>
+</nav>
+
+<div class="docs">
+  <aside class="toc glass" aria-label="On this page">
+    <span>Guide</span>
+    <a href="#overview">Overview</a>
+    <a href="#quickstart">Quick start</a>
+    <a href="#lifecycle">Deal lifecycle</a>
+    <a href="#roles">Roles and approvals</a>
+    <a href="#disputes">Disputes</a>
+    <span>Trust</span>
+    <a href="#security">Security model</a>
+    <a href="#proof">Proof on testnet</a>
+    <span>Build</span>
+    <a href="#architecture">Architecture</a>
+    <a href="#self-host">Run your own engine</a>
+    <a href="#roadmap">Roadmap</a>
+  </aside>
+
+  <article class="doc">
+    <section id="overview">
+      <span class="eyebrow space">Documentation</span>
+      <h1>Escrow for shielded Zcash</h1>
+      <p>Zcash has no smart contracts, so it has no escrow. When two strangers trade privately, one of them has to pay first and hope. Aegis Gate removes that leap of faith without a custodian and without leaving the shielded pool.</p>
+      <p>Every deal gets its own escrow: an Ironwood shielded address whose spending authority is a <b>2-of-3 FROST key</b> (<a href="https://zips.z.cash/zip-0312">ZIP 312</a>). The buyer, the seller and an arbiter each hold one share. Any two shares together can produce the one signature that moves the money. A single share can't.</p>
+      <div class="callout"><b>Testnet build.</b> Aegis Gate runs on Zcash testnet with test coins (TAZ). Don't send mainnet ZEC to an escrow address.</div>
+    </section>
+
+    <section id="quickstart">
+      <h2>Quick start</h2>
+      <h3>If you're selling</h3>
+      <ol>
+        <li>Open <a href="/app.html">a new escrow</a>. Enter what you're selling, the price in ZEC, your terms, and your shielded payout address.</li>
+        <li>Wait about a minute while the three keys are made.</li>
+        <li>Send the buyer link to your buyer over Signal, Telegram or any private channel. Bookmark your own link; it's your seller access.</li>
+        <li>Ship when the deal page shows the payment as confirmed. Approve the release when the buyer confirms delivery.</li>
+      </ol>
+      <h3>If you're buying</h3>
+      <ol>
+        <li>Open the link the seller sent you. Add a refund address in case the deal is cancelled.</li>
+        <li>Scan the QR code with your wallet, or copy the escrow address, and pay the exact price.</li>
+        <li>When the item arrives, press <b>Confirm delivery and release payment</b>.</li>
+      </ol>
+      <h3>Getting testnet ZEC</h3>
+      <p>Request free TAZ from the <a href="https://faucet.testnet.valargroup.dev">Valar testnet faucet</a> (0.125 TAZ per day). Use a wallet that supports Zcash testnet and the Ironwood pool, and give it a unified address starting with <code>utest1</code>.</p>
+    </section>
+
+    <section id="lifecycle">
+      <h2>Deal lifecycle</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Status</th><th>What's happening</th><th>Who acts</th></tr></thead>
+        <tbody>
+          <tr><td>Setting up keys</td><td>Buyer, seller and arbiter shares are created in a FROST key ceremony. The escrow address is derived from the group key.</td><td>Nobody, takes about a minute</td></tr>
+          <tr><td>Waiting for payment</td><td>The escrow is ready. The buyer pays the price into it.</td><td>Buyer</td></tr>
+          <tr><td>Funded</td><td>The payment is in the escrow. Zcash wallets wait about 10 blocks (around 12 minutes) before received funds can move.</td><td>Buyer and seller</td></tr>
+          <tr><td>In dispute</td><td>Buyer or seller has asked the arbiter to decide.</td><td>Arbiter, with one side</td></tr>
+          <tr><td>Paying out</td><td>Two matching approvals arrived. The signers produce one FROST signature, the transaction is proven and broadcast.</td><td>Nobody</td></tr>
+          <tr><td>Released / Refunded</td><td>The money has moved. The transaction ID is recorded on the deal page.</td><td>Done</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="roles">
+      <h2>Roles and approvals</h2>
+      <p>Each person gets a private link. The link is their identity for this deal: no accounts, no email. A payout runs only when <b>two different people approve the same outcome</b>, and those two are the FROST signers.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Signers</th><th>Outcome</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td>Buyer + seller</td><td>Release to the seller</td><td>A normal trade</td></tr>
+          <tr><td>Seller + buyer</td><td>Refund to the buyer</td><td>The seller cancels</td></tr>
+          <tr><td>Arbiter + seller</td><td>Release to the seller</td><td>Dispute decided for the seller</td></tr>
+          <tr><td>Arbiter + buyer</td><td>Refund to the buyer</td><td>Dispute decided for the buyer</td></tr>
+          <tr><td>Any one person</td><td>Nothing moves</td><td>Always</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="disputes">
+      <h2>Disputes</h2>
+      <p>Either the buyer or the seller can open a dispute on a funded deal. The arbiter can sign only after that happens. The arbiter reviews the deal and approves either a release or a refund; the side that agrees approves the same outcome, and the payout runs.</p>
+      <p>The arbiter can't take the money for themselves: every payout goes to an address the buyer or seller set in advance.</p>
+    </section>
+
+    <section id="security">
+      <h2>Security model</h2>
+      <ul>
+        <li><b>No single point of custody.</b> Spending needs one RedPallas signature that only two of three FROST shares can produce.</li>
+        <li><b>Verifiable escrow.</b> The escrow address and viewing key are derived from the group key and the deal ID, so every party can recompute them and check they match.</li>
+        <li><b>Shielded end to end.</b> Funding and payout are Ironwood shielded transactions. Observers see that a transaction happened and its fee, nothing else.</li>
+        <li><b>Signatures checked before broadcast.</b> Each FROST signature is verified against the spend's randomized key before the transaction is assembled.</li>
+      </ul>
+      <div class="callout"><b>Current limitation.</b> In this testnet build, all three FROST signers run inside the Aegis escrow engine, which signs only on two matching approvals from different people. The next release moves each signer into its owner's browser, so the engine never holds more than the arbiter's share. Read the full <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">threat model</a>.</div>
+      <h3>Known risks</h3>
+      <ul>
+        <li>The arbiter plus one side can decide the outcome. That's what 2-of-3 escrow means; pick an arbiter you're comfortable with.</li>
+        <li>Anyone with your deal link acts as you. Share it only privately.</li>
+        <li>Viewing keys built from a FROST group key aren't quantum-recoverable, so escrows are meant to be short-lived.</li>
+      </ul>
+    </section>
+
+    <section id="proof">
+      <h2>Proof on testnet</h2>
+      <p>The first escrow, created on 5 October 2026, ran end to end on Zcash testnet after the NU7 upgrade:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Step</th><th>Block</th><th>Transaction</th></tr></thead>
+        <tbody>
+          <tr><td>Escrow funded, 0.125 TAZ</td><td>4,465,795</td><td><code>669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef</code></td></tr>
+          <tr><td>Released to seller, 0.10 TAZ, signed by buyer + seller</td><td>4,465,954</td><td><code>1b980aaa5dfd2ee811f824688c7c5b264aaa1b87aa940dddc99d3697b11e8bdf</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>Public explorers haven't indexed post-NU7 Ironwood transactions yet. Audit the escrow directly by importing its viewing key, view-only, into an Ironwood testnet wallet:</p>
+      <div class="keyline"><code id="ufvk">uviewtest143j06vt05dlepuuvt6p52jm2nthxgk3lnw8a3d2l04ugurpk6zsde26sl2gp28yzs45xsu8xmxtwjsqcg88j4jycdrraeh2kxqv5fjngusxepmkxm453yeqlwd3f4tmt6l4vhw3hve0agxdp0mkhk8g68cxaa8x4dxj6nvldn73cntq8mua2fygwylmra</code><button class="btn sm" type="button" data-copy="ufvk">Copy</button></div>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture</h2>
+<pre class="block-code">buyer ─┐                             ┌─ escrow address (Ironwood)
+seller ├─ FROST key ceremony ──────► │  spend key = FROST group key
+arbiter┘   (encrypted relay)         └─ viewing key = f(group key, deal ID)
+
+payout:
+  build + prove PCZT ─► aegis inspect ─► sighash + randomizer per spend
+     ─► FROST rounds (2 of 3) ─► aegis apply (verifies each sig) ─► broadcast</pre>
+      <ul>
+        <li><b>aegis-core</b> (Rust): escrow derivation, PCZT signing requests, signature application and verification.</li>
+        <li><b>FROST relay</b>: the Zcash Foundation's <code>frostd</code>; messages are end-to-end encrypted between participants.</li>
+        <li><b>Escrow engine</b>: deals, private links, two-approval rule, and the payout pipeline.</li>
+        <li><b>Zcash stack</b>: librustzcash pinned to <code>9c5705f</code> for NU7, with a port of <code>zcash-devtool</code>.</li>
+      </ul>
+    </section>
+
+    <section id="self-host">
+      <h2>Run your own engine</h2>
+      <p>Everything is open source. On a machine with Rust, Node 20+, Python 3.11+ and Git Bash or Linux:</p>
+<pre class="block-code">git clone https://github.com/angelraph/aegis-gate
+cd aegis-gate
+cargo test -p aegis-core
+cargo build --release -p aegis-core
+# build frost-tools and zcash-devtool (patches/zcash-devtool-nu7.patch),
+# put frostd, frost-client, zcash-devtool and aegis in tools/bin, then:
+./apps/engine/start.sh</pre>
+      <p>The start script launches the relay and engine, opens a public tunnel, and points the website at it.</p>
+    </section>
+
+    <section id="roadmap">
+      <h2>Roadmap</h2>
+      <ol>
+        <li><b>Signer in your browser.</b> Each share stays on its owner's device. Before signing, it shows "pay X ZEC to Y" and refuses anything else.</li>
+        <li><b>Choice of arbiter.</b> Pick an independent arbiter per deal.</li>
+        <li><b>First purchase as onboarding.</b> Set up a wallet, get ZEC and shield it inside your first deal.</li>
+        <li><b>Mainnet.</b> Small real trades with the community, each auditable through its viewing key.</li>
+      </ol>
+    </section>
+  </article>
+</div>
+
+<script>
+  document.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", async () => {
+    const el = document.getElementById(btn.dataset.copy);
+    try { await navigator.clipboard.writeText(el.textContent); btn.textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected"; }
+    setTimeout(() => (btn.textContent = "Copy"), 1600);
+  }));
+  const links = [...document.querySelectorAll(".toc a")];
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) links.forEach((a) => a.setAttribute("aria-current", String(a.hash === "#" + e.target.id))); }), { rootMargin: "-30% 0px -60% 0px" });
+  document.querySelectorAll(".doc section").forEach((s) => io.observe(s));
+</script>
+</body>
+</html>

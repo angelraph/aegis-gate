@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aegis Gate FAQ</title>
+<meta name="description" content="Answers about Aegis Gate: how the 2-of-3 shielded escrow works, who controls the money, and what's private.">
+<meta name="theme-color" content="#0a0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2315131f'/%3E%3Ccircle cx='16' cy='9.5' r='3.2' fill='%238e9aff'/%3E%3Ccircle cx='9.5' cy='21' r='3.2' fill='%233fe0b0'/%3E%3Ccircle cx='22.5' cy='21' r='3.2' fill='%23ffb547'/%3E%3C/svg%3E">
+</head>
+<body data-space="arbiter">
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="/">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><circle cx="16" cy="9.5" r="3.2" fill="var(--buyer)"/><circle cx="9.5" cy="21" r="3.2" fill="var(--seller)"/><circle cx="22.5" cy="21" r="3.2" fill="var(--arbiter)"/></svg>
+    Aegis Gate
+  </a>
+  <div class="nav-links">
+    <a href="/docs.html">Docs</a>
+    <a href="/faq.html" aria-current="page">FAQ</a>
+    <a href="https://github.com/angelraph/aegis-gate">GitHub</a>
+    <a class="btn primary sm" href="/app.html">Open escrow</a>
+  </div>
+</nav>
+
+<main class="faq">
+  <header class="section-head">
+    <span class="eyebrow space">FAQ</span>
+    <h1 class="h-lg">Questions, answered plainly.</h1>
+    <p class="lede">Can't find yours? Read the <a href="/docs.html" style="color:var(--space)">docs</a> or open an issue on <a href="https://github.com/angelraph/aegis-gate/issues" style="color:var(--space)">GitHub</a>.</p>
+  </header>
+
+  <div class="faq-group">
+    <span class="eyebrow">The basics</span>
+    <details class="qa glass"><summary>What is Aegis Gate?</summary><div class="a"><p>Escrow for shielded Zcash. A buyer pays into a shielded address that the buyer, the seller and an arbiter control together. Any two of them can move the money; no one can alone.</p></div></details>
+    <details class="qa glass"><summary>Why does Zcash need this?</summary><div class="a"><p>Zcash has no smart contracts, so there's no built-in escrow. Without one, private trades between strangers mean someone pays first and hopes. Aegis Gate uses FROST threshold signatures, which Zcash supports natively, to get escrow without a custodian.</p></div></details>
+    <details class="qa glass"><summary>Do I need an account?</summary><div class="a"><p>No. Each person gets a private link for the deal. The link is your access, so keep it private and bookmark it.</p></div></details>
+  </div>
+
+  <div class="faq-group">
+    <span class="eyebrow">Money and safety</span>
+    <details class="qa glass"><summary>Who holds my money during the deal?</summary><div class="a"><p>The escrow address does. Moving funds out of it needs one signature that only two of the three key shares can produce together. The arbiter can't take the funds: every payout goes to an address the buyer or seller set.</p></div></details>
+    <details class="qa glass"><summary>Can Aegis Gate run off with the funds?</summary><div class="a"><p>The design says no: Aegis holds only the arbiter's share, and one share can't sign. In today's testnet build all three signers still run inside the Aegis engine, which acts only on two matching approvals from different people. The next release moves each signer into its owner's browser, so that guarantee is enforced by cryptography alone. We say this openly in the <a href="/docs.html#security">security model</a>.</p></div></details>
+    <details class="qa glass"><summary>What happens if the seller never ships?</summary><div class="a"><p>Open a dispute from your buyer link. The arbiter reviews the deal and can approve a refund with you. Two matching approvals send the money back to your refund address.</p></div></details>
+    <details class="qa glass"><summary>What if the buyer never confirms delivery?</summary><div class="a"><p>Open a dispute from your seller link. If the arbiter agrees you delivered, the arbiter and you approve the release together.</p></div></details>
+    <details class="qa glass"><summary>Is this real money?</summary><div class="a"><p>Not yet. Aegis Gate runs on Zcash testnet with test coins (TAZ), which are free and have no value. Never send mainnet ZEC to an escrow address.</p></div></details>
+  </div>
+
+  <div class="faq-group">
+    <span class="eyebrow">Privacy</span>
+    <details class="qa glass"><summary>What can people see on the blockchain?</summary><div class="a"><p>That a shielded transaction happened, and its fee. Not the sender, the recipient, the amount or what was bought. Escrows live in Zcash's Ironwood shielded pool from funding to payout.</p></div></details>
+    <details class="qa glass"><summary>Who can see the details of my deal?</summary><div class="a"><p>The three people in it. Each can see the escrow's activity through its viewing key, which can never spend. The deal's title, price and terms are stored by the escrow engine to show on your deal page.</p></div></details>
+  </div>
+
+  <div class="faq-group">
+    <span class="eyebrow">Using it</span>
+    <details class="qa glass"><summary>Where do I get testnet ZEC?</summary><div class="a"><p>The <a href="https://faucet.testnet.valargroup.dev">Valar testnet faucet</a> gives 0.125 TAZ per day. Use a wallet that supports Zcash testnet and the Ironwood pool.</p></div></details>
+    <details class="qa glass"><summary>Why can't I release right after paying?</summary><div class="a"><p>Zcash wallets wait about 10 blocks, roughly 12 minutes on testnet, before received funds can move. The deal page shows "confirming" until then, and the buttons work as soon as it's done.</p></div></details>
+    <details class="qa glass"><summary>What address should I use?</summary><div class="a"><p>A shielded unified address from your wallet. On testnet it starts with <code>utest1</code> or <code>zutest1</code>. Transparent addresses aren't accepted, so your payout stays private.</p></div></details>
+  </div>
+
+  <div class="faq-group">
+    <span class="eyebrow">Under the hood</span>
+    <details class="qa glass"><summary>What is FROST?</summary><div class="a"><p>Flexible Round-Optimized Schnorr Threshold signatures. A group of people jointly creates one key, each keeping a share, and any threshold of them can sign together. Zcash supports it through <a href="https://zips.z.cash/zip-0312">ZIP 312</a>, and the Zcash Foundation maintains the audited implementation Aegis Gate uses.</p></div></details>
+    <details class="qa glass"><summary>Has it worked on-chain?</summary><div class="a"><p>Yes. On 5 October 2026 a 2-of-3 escrow was funded in block 4,465,795 and released by buyer + seller in block 4,465,954, on testnet after the NU7 upgrade. The transactions and the viewing key are on the <a href="/docs.html#proof">proof page</a>.</p></div></details>
+    <details class="qa glass"><summary>Is the code open source?</summary><div class="a"><p>Yes, under MIT or Apache-2.0, at <a href="https://github.com/angelraph/aegis-gate">github.com/angelraph/aegis-gate</a>.</p></div></details>
+  </div>
+</main>
+</body>
+</html>

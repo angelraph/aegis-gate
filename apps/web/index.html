@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aegis Gate</title>
+<meta name="description" content="Private 2-of-3 escrow for strangers on shielded Zcash. Proven on Ironwood testnet.">
+<meta name="theme-color" content="#0a0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2315131f'/%3E%3Ccircle cx='16' cy='9.5' r='3.2' fill='%238e9aff'/%3E%3Ccircle cx='9.5' cy='21' r='3.2' fill='%233fe0b0'/%3E%3Ccircle cx='22.5' cy='21' r='3.2' fill='%23ffb547'/%3E%3C/svg%3E">
+</head>
+<body data-space="buyer">
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="/">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><circle cx="16" cy="9.5" r="3.2" fill="var(--buyer)"/><circle cx="9.5" cy="21" r="3.2" fill="var(--seller)"/><circle cx="22.5" cy="21" r="3.2" fill="var(--arbiter)"/></svg>
+    Aegis Gate
+  </a>
+  <div class="nav-links">
+    <a href="/docs.html">Docs</a>
+    <a href="/faq.html">FAQ</a>
+    <a href="https://github.com/angelraph/aegis-gate">GitHub</a>
+    <a class="btn primary sm" href="/app.html">Open escrow <kbd>⌘K</kbd></a>
+  </div>
+</nav>
+
+<main class="wrap landing">
+  <header class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow space">Shielded Zcash · Ironwood · 2-of-3 FROST</span>
+      <h1 class="h-xl">Trade with strangers.<br><span class="grad">Privately.</span></h1>
+      <p class="lede">Aegis Gate holds the payment in a shielded address that three people control together. Any two can move it. No one alone can, not even us.</p>
+      <button class="cmdbar glass" id="cmdbar" type="button" aria-label="Open a new escrow">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span class="typed" id="typed">Create escrow</span>
+        <kbd>⌘K</kbd>
+      </button>
+      <div class="proofline">
+        <span><b>●</b> Released on testnet · block 4,465,954</span>
+        <span>NU7-ready</span>
+        <span>Open source</span>
+      </div>
+    </div>
+
+    <figure class="story glass" id="story" aria-label="Animation: how an Aegis Gate escrow settles">
+      <svg viewBox="0 0 480 400" class="story-svg" role="presentation">
+        <defs>
+          <radialGradient id="sg-glow"><stop offset="0" stop-color="var(--space)" stop-opacity=".45"/><stop offset="1" stop-color="var(--space)" stop-opacity="0"/></radialGradient>
+          <linearGradient id="sg-beam-b" x1="0" x2="1"><stop offset="0" stop-color="var(--buyer)"/><stop offset="1" stop-color="var(--buyer)" stop-opacity=".1"/></linearGradient>
+          <linearGradient id="sg-beam-s" x1="1" x2="0"><stop offset="0" stop-color="var(--seller)"/><stop offset="1" stop-color="var(--seller)" stop-opacity=".1"/></linearGradient>
+        </defs>
+        <g class="grid-lines" stroke="var(--line)" stroke-width="1">
+          <path d="M0 80H480M0 160H480M0 240H480M0 320H480M80 0V400M160 0V400M240 0V400M320 0V400M400 0V400"/>
+        </g>
+        <circle id="sg-halo" cx="240" cy="190" r="120" fill="url(#sg-glow)" opacity="0"/>
+        <circle id="sg-shield" cx="240" cy="190" r="70" fill="none" stroke="var(--space)" stroke-width="1.5" opacity="0"/>
+        <path id="sg-beam-buyer" d="M100 110 L208 178" stroke="url(#sg-beam-b)" stroke-width="3" stroke-linecap="round" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        <path id="sg-beam-seller" d="M380 110 L272 178" stroke="url(#sg-beam-s)" stroke-width="3" stroke-linecap="round" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+        <path d="M240 330 L240 236" stroke="var(--arbiter)" stroke-width="2" stroke-dasharray="3 6" opacity=".25" fill="none"/>
+        <g id="sg-vault">
+          <rect x="196" y="160" width="88" height="74" rx="20" fill="var(--glass-solid)" stroke="var(--line-strong)" stroke-width="1.5"/>
+          <path id="sg-shackle" d="M218 160v-16a22 22 0 0 1 44 0v16" fill="none" stroke="var(--ink-2)" stroke-width="6" stroke-linecap="round" style="transform:translateY(-12px)"/>
+          <circle cx="240" cy="192" r="7" fill="var(--ink)"/><rect x="236.5" y="194" width="7" height="20" rx="3.5" fill="var(--ink)"/>
+          <text id="sg-sig" x="240" y="258" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--space)" opacity="0">1 FROST signature</text>
+        </g>
+        <g class="sg-node" id="sg-buyer" style="color:var(--buyer)">
+          <circle cx="70" cy="92" r="34" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/>
+          <text x="70" y="99" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="20" fill="currentColor">B</text>
+          <text x="70" y="146" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink-3)">BUYER</text>
+          <g id="sg-ok-buyer" opacity="0"><circle cx="96" cy="68" r="11" fill="var(--buyer)"/><path d="M91 68l3.5 3.5L101 65" stroke="#0b0b12" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+        </g>
+        <g class="sg-node" id="sg-seller" style="color:var(--seller)">
+          <circle cx="410" cy="92" r="34" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/>
+          <text x="410" y="99" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="20" fill="currentColor">S</text>
+          <text x="410" y="146" text-anchor="middle" font-family="var(--mono)" font-size="11" fill="var(--ink-3)">SELLER</text>
+          <g id="sg-ok-seller" opacity="0"><circle cx="436" cy="68" r="11" fill="var(--seller)"/><path d="M431 68l3.5 3.5L441 65" stroke="#0b0b12" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+        </g>
+        <g class="sg-node" id="sg-arbiter" style="color:var(--arbiter)" opacity=".55">
+          <circle cx="240" cy="352" r="28" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/>
+          <text x="240" y="358" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="17" fill="currentColor">A</text>
+          <text x="282" y="356" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">standing by</text>
+        </g>
+        <g id="sg-coin" style="transform:translate(70px,92px)">
+          <circle r="15" fill="var(--arbiter)"/><circle r="11" fill="none" stroke="#0b0b12" stroke-opacity=".35"/>
+          <text y="5" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="14" fill="#0b0b12">Z</text>
+        </g>
+        <g id="sg-chain" opacity="0" font-family="var(--mono)" font-size="10" fill="var(--ink-3)">
+          <rect x="330" y="200" width="138" height="58" rx="10" fill="var(--glass-solid)" stroke="var(--line)"/>
+          <text x="342" y="219">ON-CHAIN</text>
+          <text x="342" y="236">amount  ▒▒▒▒▒▒</text>
+          <text x="342" y="250">to      ▒▒▒▒▒▒▒▒</text>
+        </g>
+      </svg>
+      <figcaption class="story-cap">
+        <span class="story-step" id="sgStep">01</span>
+        <span class="story-text" id="sgText">The buyer pays into the vault, not to a stranger.</span>
+      </figcaption>
+      <div class="story-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <button class="story-toggle btn sm ghost" id="sgToggle" type="button" aria-label="Pause animation">Pause</button>
+    </figure>
+    </div>
+  </header>
+
+  <section class="section" aria-labelledby="who-h">
+    <div class="section-head">
+      <span class="eyebrow">Try it</span>
+      <h2 class="h-lg" id="who-h">Who can move the money?</h2>
+      <p class="lede">Pick the signers. The escrow follows the same rule on-chain: one valid FROST signature, which only two of the three key shares can produce together.</p>
+    </div>
+    <div class="who glass">
+      <div class="who-list" role="group" aria-label="Choose who signs">
+        <button class="who-item" data-p="buyer" style="--c:var(--buyer)" aria-pressed="true"><span class="dot">B</span><span>Buyer<small>Paid into the escrow</small></span><span class="check">✓</span></button>
+        <button class="who-item" data-p="seller" style="--c:var(--seller)" aria-pressed="true"><span class="dot">S</span><span>Seller<small>Delivered the item</small></span><span class="check">✓</span></button>
+        <button class="who-item" data-p="arbiter" style="--c:var(--arbiter)" aria-pressed="false"><span class="dot">A</span><span>Arbiter<small>Steps in only on a dispute</small></span><span class="check">✓</span></button>
+      </div>
+      <div class="who-result" aria-live="polite">
+    <div class="vault vault-sm" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <defs>
+          <radialGradient id="coreGlow"><stop offset="0" stop-color="var(--space)" stop-opacity=".35"/><stop offset="1" stop-color="var(--space)" stop-opacity="0"/></radialGradient>
+        </defs>
+        <circle cx="200" cy="200" r="190" fill="url(#coreGlow)"/>
+        <circle class="ring" cx="200" cy="200" r="132" stroke-dasharray="2 7"/>
+        <circle class="ring" cx="200" cy="200" r="90"/>
+        <path class="arc" id="arc-bs" d="M200 68 L86 266" stroke="var(--buyer)"/>
+        <path class="arc" id="arc-sa" d="M86 266 L314 266" stroke="var(--seller)"/>
+        <path class="arc" id="arc-ab" d="M314 266 L200 68" stroke="var(--arbiter)"/>
+        <g class="core">
+          <rect x="164" y="170" width="72" height="62" rx="16" fill="var(--glass-solid)" stroke="var(--line-strong)"/>
+          <path d="M180 170v-12a20 20 0 0 1 40 0v12" fill="none" stroke="var(--ink-2)" stroke-width="5" stroke-linecap="round" id="shackle"/>
+          <circle cx="200" cy="198" r="6" fill="var(--ink)"/><rect x="197" y="200" width="6" height="16" rx="3" fill="var(--ink)"/>
+        </g>
+        <g class="node" id="n-buyer" style="color:var(--buyer)"><circle cx="200" cy="68" r="30" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/><text x="200" y="74" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="18" fill="currentColor">B</text></g>
+        <g class="node" id="n-seller" style="color:var(--seller)"><circle cx="86" cy="266" r="30" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/><text x="86" y="272" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="18" fill="currentColor">S</text></g>
+        <g class="node" id="n-arbiter" style="color:var(--arbiter)"><circle cx="314" cy="266" r="30" fill="var(--glass-solid)" stroke="currentColor" stroke-width="2"/><text x="314" y="272" text-anchor="middle" font-family="var(--display)" font-weight="700" font-size="18" fill="currentColor">A</text></g>
+      </svg>
+      <span class="vault-label" id="vaultLabel">Locked · 2 of 3 to open</span>
+    </div>
+
+        <span class="verdict-tag" id="vTag" data-state="ok">Funds move</span>
+        <p class="verdict-title" id="vTitle">Release to the seller</p>
+        <p class="muted" id="vBody">Normal trade. Buyer and seller co-sign, the seller is paid, and the arbiter never sees a signing request.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="spaces" aria-label="The three people in every deal">
+    <article class="space-card glass" data-space="buyer"><span class="space-chip">B</span><h3 class="h-md">Buyer</h3><p>Pays into a vault, not to a stranger. Confirms delivery to release the money.</p><span class="space-foot">Holds key share 1</span></article>
+    <article class="space-card glass" data-space="seller"><span class="space-chip">S</span><h3 class="h-md">Seller</h3><p>Sees the payment locked before shipping. Gets paid the moment the buyer confirms.</p><span class="space-foot">Holds key share 2</span></article>
+    <article class="space-card glass" data-space="arbiter"><span class="space-chip">A</span><h3 class="h-md">Arbiter</h3><p>Sleeps through every good trade. Breaks the tie only when there's a dispute.</p><span class="space-foot">Holds key share 3</span></article>
+  </section>
+
+  <section class="section" id="proof" aria-labelledby="proof-h">
+    <div class="section-head">
+      <span class="eyebrow">Proven on Zcash testnet</span>
+      <h2 class="h-lg" id="proof-h">Not a mockup. It moved real coins.</h2>
+    </div>
+    <div class="stats">
+      <div class="stat glass"><span class="stat-n">3</span><span class="stat-l">people made one key.<br>No one ever held it whole.</span></div>
+      <div class="stat glass"><span class="stat-n">2</span><span class="stat-l">signatures released the payment, block 4,465,954.</span></div>
+      <div class="stat glass"><span class="stat-n">0</span><span class="stat-l">amounts, senders or recipients visible on-chain.</span></div>
+    </div>
+    <a class="link-arrow" href="/docs.html#proof">See the transactions and audit the escrow yourself →</a>
+  </section>
+
+  <section class="cta glass" aria-labelledby="cta-h">
+    <span class="eyebrow space">Testnet is open</span>
+    <h2 class="h-lg" id="cta-h">Sell something to a stranger tonight.</h2>
+    <p class="lede">Grab free testnet ZEC, open an escrow, send the link. Your first shielded transaction pays for something real.</p>
+    <div class="row-actions"><a class="btn primary" href="/app.html">Open an escrow</a><a class="btn" href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">Get testnet ZEC</a></div>
+  </section>
+
+  <footer class="foot">
+    <span>Aegis Gate · the trust layer of Aegis Market · ZECATHON Wildcard</span>
+    <span><a href="/docs.html">Docs</a> · <a href="/faq.html">FAQ</a> · <a href="https://github.com/angelraph/aegis-gate">Source</a> · Testnet prototype</span>
+  </footer>
+</main>
+
+<script>
+(() => {
+  // ⌘K / Ctrl+K opens the composer.
+  const go = () => (location.href = "/app.html");
+  document.getElementById("cmdbar").addEventListener("click", go);
+  addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); go(); } });
+
+  // Typed command-bar examples.
+  const examples = ["Create escrow · Hand-bound notebook · 0.02 ZEC", "Create escrow · Logo design, 3 concepts · 0.15 ZEC", "Create escrow · Vintage film camera · 0.4 ZEC"];
+  const typed = document.getElementById("typed");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) typed.textContent = examples[0];
+  else {
+    let i = 0, j = 0, back = false;
+    setInterval(() => {
+      const s = examples[i];
+      if (!back) { j++; if (j > s.length + 18) back = true; }
+      else { j -= 2; if (j <= 0) { back = false; i = (i + 1) % examples.length; j = 0; } }
+      typed.textContent = s.slice(0, Math.max(0, Math.min(j, s.length))) || "​";
+    }, 55);
+  }
+
+  // Who can move the money.
+  const sel = { buyer: true, seller: true, arbiter: false };
+  const pairs = {
+    "buyer,seller": ["Release to the seller", "Normal trade. Buyer and seller co-sign, the seller is paid, and the arbiter never sees a signing request."],
+    "arbiter,seller": ["Dispute resolved for the seller", "The buyer won't confirm delivery. The arbiter reviews the evidence and co-signs with the seller."],
+    "arbiter,buyer": ["Refund to the buyer", "The item never arrived. The arbiter co-signs a refund with the buyer."],
+  };
+  const arcs = { "buyer,seller": "arc-bs", "arbiter,seller": "arc-sa", "arbiter,buyer": "arc-ab" };
+  function render() {
+    const on = Object.keys(sel).filter((k) => sel[k]).sort();
+    let ok = on.length >= 2, title, body;
+    if (on.length === 0) [title, body] = ["Nothing moves", "No one has signed. The funds stay locked in the escrow."];
+    else if (on.length === 1) [title, body] = ["Nothing moves", `The ${on[0]} alone holds one share. One share can't produce a valid signature, so the funds stay locked.`];
+    else if (on.length === 3) [title, body] = ["Any two are enough", "All three could sign, but two signatures are all it takes. The arbiter stays out unless there's a dispute."];
+    else [title, body] = pairs[on.join(",")];
+    document.getElementById("vTag").dataset.state = ok ? "ok" : "no";
+    document.getElementById("vTag").textContent = ok ? "Funds move" : "Locked";
+    document.getElementById("vTitle").textContent = title;
+    document.getElementById("vBody").textContent = body;
+    document.getElementById("vaultLabel").textContent = ok ? "Open · signed by " + on.join(" + ") : "Locked · 2 of 3 to open";
+    document.getElementById("shackle").setAttribute("transform", ok ? "translate(0 -10)" : "");
+    for (const p of Object.keys(sel)) {
+      document.querySelector(`.who-item[data-p="${p}"]`).setAttribute("aria-pressed", String(sel[p]));
+      document.getElementById("n-" + p).dataset.on = String(sel[p]);
+    }
+    for (const [k, id] of Object.entries(arcs)) {
+      const live = k.split(",").every((p) => sel[p]);
+      document.getElementById(id).style.strokeOpacity = live ? 1 : 0.12;
+    }
+  }
+  document.querySelectorAll(".who-item").forEach((b) => b.addEventListener("click", () => { sel[b.dataset.p] = !sel[b.dataset.p]; render(); }));
+  render();
+
+  document.querySelectorAll("[data-copy]").forEach((btn) => btn.addEventListener("click", async () => {
+    const el = document.getElementById(btn.dataset.copy);
+    try { await navigator.clipboard.writeText(el.textContent); btn.textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected"; }
+    setTimeout(() => (btn.textContent = "Copy"), 1600);
+  }));
+})();
+</script>
+<script src="/story.js" defer></script>
+</body>
+</html>

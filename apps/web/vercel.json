@@ -1,0 +1,6 @@
+{
+  "cleanUrls": false,
+  "headers": [
+    { "source": "/engine.json", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
+}

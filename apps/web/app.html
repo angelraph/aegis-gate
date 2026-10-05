@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Aegis Gate Deals</title>
+<meta name="theme-color" content="#0a0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2315131f'/%3E%3Ccircle cx='16' cy='9.5' r='3.2' fill='%238e9aff'/%3E%3Ccircle cx='9.5' cy='21' r='3.2' fill='%233fe0b0'/%3E%3Ccircle cx='22.5' cy='21' r='3.2' fill='%23ffb547'/%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body data-space="seller">
+
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="/">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><circle cx="16" cy="9.5" r="3.2" fill="var(--buyer)"/><circle cx="9.5" cy="21" r="3.2" fill="var(--seller)"/><circle cx="22.5" cy="21" r="3.2" fill="var(--arbiter)"/></svg>
+    Aegis Gate
+  </a>
+  <div class="nav-links">
+    <span class="engine-dot" id="engineState" data-state="checking">Engine…</span>
+    <a href="/docs.html">Docs</a>
+    <a href="/faq.html">FAQ</a>
+    <button class="btn primary sm" id="newBtn" type="button">New escrow <kbd>⌘K</kbd></button>
+  </div>
+</nav>
+
+<main class="app" id="view" aria-live="polite"><p class="muted">Loading…</p></main>
+<div class="dock" id="dock" hidden></div>
+
+<template id="tpl-sheet">
+  <div class="sheet-backdrop" id="sheet" role="dialog" aria-modal="true" aria-labelledby="f-title-label">
+    <form class="sheet glass" id="newForm" novalidate>
+      <div class="sheet-head">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color:var(--ink-3)"><path d="M12 5v14M5 12h14"/></svg>
+        <label class="sr" for="f-title" id="f-title-label">What are you selling?</label>
+        <input id="f-title" name="title" maxlength="120" placeholder="What are you selling?" autocomplete="off" required>
+        <kbd>esc</kbd>
+      </div>
+      <div class="sheet-body">
+        <div class="grid-2">
+          <div class="field"><label for="f-price">Price in ZEC</label><input id="f-price" name="priceZec" inputmode="decimal" placeholder="0.02" required></div>
+          <div class="field"><label for="f-addr">Your payout address</label><input id="f-addr" name="sellerAddress" class="mono" placeholder="utest1… (shielded)" autocomplete="off" required></div>
+        </div>
+        <div class="field"><label for="f-terms">Terms the buyer agrees to</label><textarea id="f-terms" name="terms" rows="2" maxlength="2000" placeholder="Ships within 3 days. Buyer confirms delivery to release payment."></textarea></div>
+        <p class="hint">Testnet only. Need coins? <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">Get free TAZ</a>.</p>
+        <p class="error" id="newError" hidden></p>
+      </div>
+      <div class="sheet-foot">
+        <span class="faint" style="font-size:.82rem">You're the seller. The buyer gets their own link.</span>
+        <div class="row-actions"><button class="btn ghost" type="button" id="sheetCancel">Cancel</button><button class="btn space" id="newSubmit" type="submit">Create escrow <kbd>↵</kbd></button></div>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const view = $("#view"), dock = $("#dock");
+  const params = new URLSearchParams(location.search);
+  const ZATS = 1e8;
+  let ENGINE = null, pollTimer = null, current = null;
+
+  const STATUS = {
+    setting_up: ["Making keys", "wait"], awaiting_funds: ["Waiting for payment", "wait"], funded: ["Funded", "ok"],
+    disputed: ["In dispute", "warn"], paying_out: ["Paying out", "wait"], released: ["Released", "ok"], refunded: ["Refunded", "ok"],
+    setup_failed: ["Setup interrupted", "warn"],
+  };
+  const ROLE = { buyer: "Buyer", seller: "Seller", arbiter: "Arbiter" };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const zec = (z) => (z / ZATS).toLocaleString("en-US", { maximumFractionDigits: 8 });
+  const tq = () => encodeURIComponent(params.get("t"));
+
+  function toast(msg) {
+    const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role", "status");
+    document.body.append(t); setTimeout(() => t.remove(), 2200);
+  }
+
+  // ---------- engine ----------
+  async function engineUrl(force) {
+    if (ENGINE && !force) return ENGINE;
+    if (["localhost", "127.0.0.1"].includes(location.hostname)) return (ENGINE = "http://127.0.0.1:8787");
+    const r = await fetch("/engine.json?ts=" + Date.now(), { cache: "no-store" });
+    return (ENGINE = (await r.json()).url.replace(/\/$/, ""));
+  }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  // Retries network failures (not API errors) and re-reads the engine address in case it moved.
+  async function api(path, opts = {}, tries = 4) {
+    for (let k = 0; ; k++) {
+      let r;
+      try {
+        const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
+        r = await fetch((await engineUrl(k > 0)) + path, { ...opts, signal: ctl.signal, headers: { "content-type": "application/json" } });
+        clearTimeout(to);
+      } catch (e) {
+        if (k + 1 >= tries) throw new Error("Can't reach the escrow engine right now. Your funds are safe; this page keeps retrying.");
+        await sleep(800 * 2 ** k); continue;
+      }
+      if (r.status >= 502 && r.status <= 504 && k + 1 < tries) { await sleep(800 * 2 ** k); continue; }
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.error || `The escrow engine answered ${r.status}.`);
+      return body;
+    }
+  }
+  async function checkEngine() {
+    const el = $("#engineState");
+    try { await api("/api/health", {}, 5); el.dataset.state = "up"; el.textContent = "Engine online"; return true; }
+    catch { el.dataset.state = "down"; el.textContent = "Reconnecting…"; return false; }
+  }
+
+  function wireCopy(root = view) {
+    root.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy); toast("Copied"); }
+      catch { toast("Copy blocked. Select the text instead."); }
+    }));
+  }
+  const copyBtn = (text, label = "Copy") => `<button class="btn sm" type="button" data-copy="${esc(text)}">${label}</button>`;
+  const dealLink = (id, t) => `${location.origin}/app.html?id=${id}&t=${encodeURIComponent(t)}`;
+
+  // ---------- composer (⌘K) ----------
+  function openSheet() {
+    if ($("#sheet")) return;
+    document.body.append($("#tpl-sheet").content.cloneNode(true));
+    const sheet = $("#sheet"), form = $("#newForm");
+    const close = () => sheet.remove();
+    $("#f-title").focus();
+    $("#sheetCancel").addEventListener("click", close);
+    sheet.addEventListener("click", (e) => { if (e.target === sheet) close(); });
+    sheet.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = new FormData(form), err = $("#newError"), btn = $("#newSubmit");
+      err.hidden = true; btn.disabled = true; btn.textContent = "Creating escrow…";
+      try {
+        const r = await api("/api/deals", { method: "POST", body: JSON.stringify({
+          title: f.get("title"), priceZec: Number(String(f.get("priceZec")).replace(",", ".")), terms: f.get("terms"), sellerAddress: f.get("sellerAddress"),
+        }) });
+        close();
+        history.pushState(null, "", `/app.html?id=${r.id}&t=${encodeURIComponent(r.seller)}&new=1`);
+        route();
+      } catch (x) { err.textContent = x.message; err.hidden = false; btn.disabled = false; btn.innerHTML = "Create escrow <kbd>↵</kbd>"; }
+    });
+  }
+  $("#newBtn").addEventListener("click", openSheet);
+  addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); openSheet(); } });
+
+  // ---------- deal space ----------
+  function track(s) {
+    const order = ["setting_up", "awaiting_funds", "funded", "settled"];
+    const stage = ["released", "refunded"].includes(s) ? 4 : s === "paying_out" || s === "disputed" ? 3 : order.indexOf(s) + 1;
+    const items = [["Keys made", "3 shares, 1 key"], ["Paid in", "held shielded"], ["Confirmed", "both sides agree"], [s === "refunded" ? "Refunded" : "Released", "2 of 3 signed"]];
+    return `<ol class="track" aria-label="Deal progress">${items.map(([b, t], i) => `<li data-done="${i + 1 < stage || stage === 4}" data-now="${i + 1 === stage && stage !== 4}"><span class="bar"></span><b>${b}</b><span>${t}</span></li>`).join("")}</ol>`;
+  }
+
+  function keysPanel(d) {
+    const signedBy = new Set(Object.keys(d.approvals || {}));
+    const last = (d.txs || []).at(-1);
+    if (last) last.signers.forEach((s) => signedBy.add(s));
+    const rows = [["buyer", "B", "Paid in, confirms delivery"], ["seller", "S", "Ships, gets paid"], ["arbiter", "A", "Decides disputes only"]];
+    return `<section class="glass block" aria-labelledby="keys-h"><h2 class="h-sm" id="keys-h">The three keys</h2><div class="keys">${rows.map(([r, l, sub]) => {
+      const act = (d.approvals || {})[r];
+      const state = act ? `approved ${act}` : last && last.signers.includes(r) ? "signed" : "holding";
+      return `<div class="key" style="--c:var(--${r})" data-signed="${signedBy.has(r)}" data-me="${d.role === r}"><span class="dot">${l}</span><span><b>${ROLE[r]}</b><small>${sub}</small></span><span class="state">${state}</span></div>`;
+    }).join("")}</div><p class="hint">Any two matching approvals move the money. One alone can't.</p></section>`;
+  }
+
+  function decisions(d) {
+    const r = d.role, s = d.status, a = d.approvals || {}, mine = a[r];
+    const confirming = d.balance && d.balance.total > 0 && d.balance.spendable < d.balance.total;
+    const opts = [];
+    if (s === "funded") {
+      if (r === "buyer") {
+        opts.push(["release", "Confirm delivery and release", "space"]);
+        if (a.seller === "refund") opts.push(["refund", "Accept the seller's refund", ""]);
+        opts.push(["dispute", "Open a dispute", "ghost"]);
+      }
+      if (r === "seller") {
+        opts.push(["release", "Approve release", "space"]);
+        opts.push(["refund", "Refund the buyer", ""]);
+        opts.push(["dispute", "Open a dispute", "ghost"]);
+      }
+    }
+    if (s === "disputed") {
+      if (r === "arbiter") { opts.push(["release", "Rule for the seller", "space"]); opts.push(["refund", "Rule for the buyer", ""]); }
+      else opts.push([r === "buyer" ? "refund" : "release", r === "buyer" ? "Ask for my refund" : "Ask for my payment", "space"]);
+    }
+    const btns = opts.map(([act, label, cls]) => `<button class="btn ${cls}" data-act="${act}" ${mine === act || confirming ? "disabled" : ""}>${mine === act ? "You approved this" : label}</button>`);
+    return { btns, confirming };
+  }
+
+  function onboarding(d) {
+    if (d.role !== "buyer" || d.status !== "awaiting_funds") return "";
+    return `<section class="glass block onboard"><h2 class="h-sm">New to shielded Zcash?</h2><ol>
+      <li><span>Install a wallet that supports Zcash testnet and the Ironwood pool.</span></li>
+      <li><span>Get free test coins at <a href="https://faucet.testnet.valargroup.dev" target="_blank" rel="noopener">the testnet faucet</a>. Paste your wallet's shielded <code>utest1…</code> address.</span></li>
+      <li><span>Scan the QR code here and send the exact price. That's your first shielded payment, and it buys something real.</span></li>
+    </ol></section>`;
+  }
+
+  function renderDeal(d, fresh) {
+    current = d;
+    document.body.dataset.space = d.role;
+    const [statusText, tone] = STATUS[d.status] || [d.status, "wait"];
+    const price = Number(d.priceZec);
+    const needAddr = (d.role === "buyer" && !d.addresses.buyer) || (d.role === "seller" && !d.addresses.seller);
+    const { btns, confirming } = decisions(d);
+    const balTotal = d.balance ? d.balance.total : 0;
+    const balState = !d.balance ? "not checked yet" : balTotal === 0 ? "nothing yet" : confirming ? "confirming · about 10 blocks" : "confirmed";
+    const payTitle = d.role === "buyer" && d.status === "awaiting_funds" ? "Pay into the escrow" : "The escrow";
+
+    view.innerHTML = `
+      <section class="glass space-head">
+        <div class="space-top"><span class="role-badge"><i>${ROLE[d.role][0]}</i>You're the ${ROLE[d.role].toLowerCase()}</span><span class="status" data-tone="${tone}">${statusText}</span></div>
+        <div class="deal-title"><span class="eyebrow">Deal ${esc(d.id)} · Zcash testnet</span><h1 class="h-lg">${esc(d.title)}</h1>
+          <p class="price">${price.toLocaleString("en-US", { maximumFractionDigits: 8 })}<small>ZEC</small></p>
+          ${d.terms ? `<p class="terms">${esc(d.terms)}</p>` : ""}</div>
+        ${track(d.status)}
+      </section>
+
+      ${fresh && d.invite ? `<section class="glass block" style="--space:var(--buyer)"><span class="eyebrow space">Next step</span><h2 class="h-md">Send this link to your buyer</h2>
+        <p class="muted">It's their private way into the deal: they pay, track and approve from it. Anyone holding it acts as the buyer, so send it directly.</p>
+        <div class="keyline"><code>${esc(dealLink(d.id, d.invite.buyer))}</code>${copyBtn(dealLink(d.id, d.invite.buyer), "Copy link")}</div>
+        <p class="hint">This page is your seller link. Bookmark it.</p></section>` : ""}
+
+      <div class="cols">
+        <div class="col">
+          ${d.status === "setting_up" ? `<section class="glass block"><h2 class="h-sm">Making the three keys</h2><p class="muted">Buyer, seller and arbiter shares are being created in a FROST key ceremony. About a minute.</p><pre class="log" id="jobLog">Starting…</pre></section>` : ""}
+          ${d.escrow ? `<section class="glass block"><div class="pay">
+              <div class="qr" id="qr" role="img" aria-label="Payment QR code"></div>
+              <div class="stack-sm" style="display:grid;gap:10px;min-width:0">
+                <h2 class="h-md">${payTitle}</h2>
+                <p class="muted">${d.role === "buyer" && d.status === "awaiting_funds" ? `Scan with your wallet, or copy the address, and send exactly ${price} ZEC.` : "A shielded Ironwood address. Only two of the three keys together can move it."}</p>
+                <div class="amount-row"><b>${zec(balTotal)} ZEC</b><span class="faint">${balState}</span><button class="btn sm" id="refresh">Check now</button></div>
+                ${d.status === "awaiting_funds" ? `<div class="row-actions"><a class="btn space" href="zcash:${esc(d.escrow.address)}?amount=${price}&amp;message=${encodeURIComponent("Aegis Gate: " + d.title)}">Open in wallet</a>${copyBtn(`zcash:${d.escrow.address}?amount=${price}`, "Copy payment link")}</div>` : ""}
+              </div></div>
+              <div class="keyline"><code>${esc(d.escrow.address)}</code>${copyBtn(d.escrow.address)}</div>
+            </section>` : ""}
+          ${onboarding(d)}
+          ${needAddr ? `<section class="glass block"><h2 class="h-sm">${d.role === "buyer" ? "Where should a refund go?" : "Where should your payment go?"}</h2>
+            <form class="keyline" id="addrForm"><label class="sr" for="f-myaddr">Shielded address</label><input class="input mono" id="f-myaddr" placeholder="Paste your wallet's utest1… address" required><div class="row-actions"><button class="btn" type="button" id="pasteAddr">Paste</button><button class="btn space">Save</button></div></form>
+            <p class="error" id="addrError" hidden></p></section>` : ""}
+          ${d.txs && d.txs.length ? `<section class="glass block"><h2 class="h-sm">On-chain record</h2>${d.txs.map((t) => `<div class="tx"><div class="tx-head"><b>${t.action === "release" ? "Released to seller" : "Refunded to buyer"}</b><span class="faint">signed by ${t.signers.map((s) => ROLE[s]).join(" + ")}</span></div><code class="txid">${esc(t.txid || "pending")}</code></div>`).join("")}</section>` : ""}
+          ${d.escrow ? `<details class="glass block"><summary>Audit this escrow</summary><p class="muted">The viewing key shows the escrow's activity in any Ironwood testnet wallet. It can never spend.</p><div class="keyline"><code>${esc(d.escrow.ufvk)}</code>${copyBtn(d.escrow.ufvk)}</div></details>` : ""}
+        </div>
+        <div class="col">
+          ${["funded", "disputed"].includes(d.status) ? `<section class="glass decide"><span class="eyebrow space">${d.status === "disputed" ? "Dispute" : "Your call"}</span>
+            <h2 class="h-md">${d.status === "disputed" ? (d.role === "arbiter" ? "Review and decide" : "The arbiter is reviewing") : "Settle the deal"}</h2>
+            <p class="muted">${confirming ? "The payment is confirming. Buttons unlock after about 10 blocks." : "Two matching approvals move the money. Each approval is one FROST signature."}</p>
+            <div class="decide-actions has-dock">${btns.join("") || '<p class="hint">Nothing for you to do right now.</p>'}</div>
+            <p class="error" id="actError" hidden></p><pre class="log" id="jobLog" hidden></pre></section>` : ""}
+          ${d.status === "paying_out" ? `<section class="glass decide"><span class="eyebrow space">Paying out</span><h2 class="h-md">Signing and broadcasting</h2><p class="muted">The two signers are producing one FROST signature. Then the transaction is proven and sent to the Zcash network.</p><pre class="log" id="jobLog" hidden></pre></section>` : ""}
+          ${d.escrow ? keysPanel(d) : ""}
+        </div>
+      </div>
+      <p class="fineprint">Testnet build: all three FROST signers run in the Aegis escrow engine, which acts only on two matching approvals from different people. Next: each signer in its owner's browser. <a href="/docs.html#security">Security model</a></p>`;
+
+    // mobile dock mirrors the decision buttons
+    if (btns.length) { dock.innerHTML = btns.slice(0, 2).join(""); dock.hidden = false; dock.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act, b))); }
+    else { dock.hidden = true; dock.innerHTML = ""; $(".decide-actions")?.classList.remove("has-dock"); }
+
+    wireCopy();
+    if (d.escrow && window.QRCode) new QRCode($("#qr"), { text: `zcash:${d.escrow.address}?amount=${price}&message=${encodeURIComponent("Aegis Gate: " + d.title)}`, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
+    $("#refresh")?.addEventListener("click", async (e) => {
+      e.target.disabled = true; e.target.textContent = "Checking…";
+      try { renderDeal(await api(`/api/deals/${d.id}/refresh?t=${tq()}`, { method: "POST" })); toast("Balance updated"); } catch (x) { toast(x.message); e.target.disabled = false; e.target.textContent = "Check now"; }
+    });
+    $("#addrForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try { renderDeal(await api(`/api/deals/${d.id}/address?t=${tq()}`, { method: "POST", body: JSON.stringify({ address: $("#f-myaddr").value }) })); toast("Address saved"); }
+      catch (x) { const el = $("#addrError"); el.textContent = x.message; el.hidden = false; }
+    });
+    $("#pasteAddr")?.addEventListener("click", async () => {
+      try { const t = (await navigator.clipboard.readText()).trim(); $("#f-myaddr").value = t; toast(t ? "Pasted from clipboard" : "Clipboard is empty"); }
+      catch { $("#f-myaddr").focus(); toast("Press Ctrl+V or long-press to paste"); }
+    });
+    view.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act, b)));
+    if (d.status === "setting_up" && d.setupJob) followJob(d.setupJob);
+    schedulePoll(d, confirming);
+  }
+
+  async function act(action, btn) {
+    const d = current, el = $("#actError");
+    if (el) el.hidden = true;
+    btn.disabled = true; btn.textContent = "Working…";
+    try {
+      const r = action === "dispute" ? await api(`/api/deals/${d.id}/dispute?t=${tq()}`, { method: "POST" })
+        : await api(`/api/deals/${d.id}/approve?t=${tq()}`, { method: "POST", body: JSON.stringify({ action }) });
+      renderDeal(r);
+      toast(action === "dispute" ? "Dispute opened" : r.job ? "Two approvals match. Paying out." : "Approved. Waiting for one more person.");
+      if (r.job) followJob(r.job);
+    } catch (x) { if (el) { el.textContent = x.message; el.hidden = false; } else toast(x.message); btn.disabled = false; btn.textContent = "Try again"; }
+  }
+
+  async function followJob(id) {
+    for (;;) {
+      let j; try { j = await api(`/api/jobs/${id}`); } catch { return; }
+      const log = $("#jobLog");
+      if (log) { log.hidden = false; log.textContent = j.log.split("\n").filter((l) => /^== |group key|TxID|"address"|^[0-9a-f]{64}$|failed/i.test(l)).join("\n").trim() || "Starting…"; }
+      if (j.state === "done" || j.state === "failed") {
+        if (j.state === "failed") toast("That step failed. The funds are safe in the escrow.");
+        return load(false);
+      }
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+
+  function schedulePoll(d, confirming) {
+    clearTimeout(pollTimer);
+    if (confirming || d.status === "awaiting_funds") pollTimer = setTimeout(() => load(false, true), 30000);
+    else if (["setting_up", "paying_out"].includes(d.status)) pollTimer = setTimeout(() => load(false), 6000);
+  }
+
+  async function load(fresh, refresh) {
+    const id = params.get("id");
+    try {
+      renderDeal(refresh ? await api(`/api/deals/${id}/refresh?t=${tq()}`, { method: "POST" }) : await api(`/api/deals/${id}?t=${tq()}`), fresh);
+    } catch (x) {
+      dock.hidden = true;
+      view.innerHTML = `<section class="glass block"><h1 class="h-lg">Can't open this deal</h1><p class="muted">${esc(x.message)}</p><div class="row-actions"><button class="btn primary" id="again">Start a new escrow</button></div></section>`;
+      $("#again").addEventListener("click", openSheet);
+    }
+  }
+
+  // ---------- empty state + operator ----------
+  function renderHome() {
+    document.body.dataset.space = "seller"; dock.hidden = true;
+    view.innerHTML = `<section class="glass space-head"><span class="eyebrow space">New escrow</span><h1 class="h-lg">Sell something. Get paid safely.</h1>
+      <p class="lede">Describe the deal and where you want to be paid. Aegis Gate makes a 2-of-3 shielded escrow and a private link for your buyer.</p>
+      <div class="row-actions"><button class="btn space" id="start">Open the composer <kbd>⌘K</kbd></button><a class="btn" href="/docs.html#quickstart">How it works</a></div></section>`;
+    $("#start").addEventListener("click", openSheet);
+    if (params.get("compose") !== "0") openSheet();
+  }
+
+  async function renderAdmin() {
+    document.body.dataset.space = "arbiter"; dock.hidden = true;
+    try {
+      const { deals } = await api(`/api/admin/deals?key=${encodeURIComponent(params.get("admin"))}`);
+      view.innerHTML = `<section class="glass space-head"><span class="role-badge"><i>A</i>Arbiter desk</span><h1 class="h-lg">Deals</h1><p class="muted">Open a deal as the arbiter. You can sign only after the buyer or seller opens a dispute.</p></section>
+        <section class="glass" style="padding:6px 0">${deals.length ? deals.map((x) => `<a class="list-row" href="${dealLink(x.id, x.arbiter)}"><span><b>${esc(x.title)}</b><br><span class="faint" style="font-size:.82rem">${x.priceZec} ZEC · ${esc(x.id)}</span></span><span class="status" data-tone="${(STATUS[x.status] || [0, "wait"])[1]}">${(STATUS[x.status] || [x.status])[0]}</span><span aria-hidden="true">→</span></a>`).join("") : '<p class="block muted">No deals yet.</p>'}</section>`;
+    } catch (x) { view.innerHTML = `<section class="glass block"><h1 class="h-lg">Arbiter desk</h1><p class="muted">${esc(x.message)}</p></section>`; }
+  }
+
+  async function route() {
+    [...params.keys()].forEach((k) => params.delete(k));
+    new URLSearchParams(location.search).forEach((v, k) => params.set(k, v));
+    clearTimeout(pollTimer);
+    if (!(await checkEngine())) {
+      dock.hidden = true;
+      view.innerHTML = `<section class="glass block"><span class="eyebrow">Reconnecting</span><h1 class="h-lg">One moment.</h1><p class="muted">The escrow engine is restarting or your connection dropped. Your funds are safe on the Zcash network. This page reconnects on its own.</p><p class="faint" id="retryNote">Trying again in 10 seconds…</p></section>`;
+      let n = 10; const iv = setInterval(() => { n--; const el = $("#retryNote"); if (el) el.textContent = `Trying again in ${n} seconds…`; if (n <= 0) { clearInterval(iv); route(); } }, 1000);
+      return;
+    }
+    if (params.get("admin")) return renderAdmin();
+    if (params.get("id") && params.get("t")) return load(params.get("new") === "1", true);
+    renderHome();
+  }
+  addEventListener("popstate", route);
+  route();
+})();
+</script>
+</body>
+</html>
