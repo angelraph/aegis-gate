@@ -9,3 +9,4 @@ tools/
 poc/.deals/
 poc/.deals-test/
 .sim-*.json
+apps/web/split.html

@@ -32,6 +32,9 @@ await expectRefused("deal without a name", call("/api/deals", { title: "", price
 await expectRefused("negative price", call("/api/deals", { title: "x", priceZec: -1, sellerAddress: ADDR }), "price");
 await expectRefused("transparent payout address", call("/api/deals", { title: "x", priceZec: 1, sellerAddress: "tmA5fCPmkg1111111111111111111111111" }), "shielded");
 await expectRefused("malformed JSON body", call("/api/deals", "{not json"));
+await expectRefused("price below the minimum", call("/api/deals", { title: "x", priceZec: 0.0001, sellerAddress: ADDR }), "at least");
+await expectRefused("mainnet price above the beta cap", call("/api/deals", { title: "x", priceZec: 0.01, network: "main", sellerAddress: ADDR }), "mainnet beta");
+await expectRefused("testnet address on a mainnet deal", call("/api/deals", { title: "x", priceZec: 0.0003, network: "main", sellerAddress: ADDR }), "mainnet");
 await expectRefused("oversized body", call("/api/deals", { title: "x".repeat(200000), priceZec: 1, sellerAddress: ADDR }));
 
 const d = await expectOk("create a self-custody deal", call("/api/deals", { title: "Error-path deal", priceZec: 0.01, sellerAddress: ADDR, selfCustody: true }));
@@ -47,6 +50,7 @@ await expectRefused("admin list with wrong key", call(`/api/admin/deals?key=nope
 await expectRefused("approve before keys exist", call(`/api/deals/${d.id}/approve?t=${tok.buyer}`, { action: "release" }), "funded");
 await expectRefused("unknown action", call(`/api/deals/${d.id}/approve?t=${tok.buyer}`, { action: "steal" }));
 await expectRefused("dispute before funding", call(`/api/deals/${d.id}/dispute?t=${tok.buyer}`, {}), "funded");
+await expectRefused("restart signing with no session", call(`/api/deals/${d.id}/reset-signing?t=${tok.buyer}`, {}), "no signing session");
 await expectRefused("sign with no session", call(`/api/deals/${d.id}/sign?t=${tok.buyer}`, { stage: "commit", session: "x", commitments: [] }), "nothing to sign");
 
 // ---- key ceremony abuse ----

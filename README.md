@@ -21,7 +21,7 @@ This makes a shielded transaction *worth making*: it is the payment in a real tr
 between strangers, protected without trusting anyone. Aegis Gate is the trust layer of
 **Aegis Market**, a private marketplace built on it.
 
-## What works today (proven on Zcash testnet, post-NU7)
+## What works today (proven on-chain: testnet post-NU7, and mainnet)
 
 | Step | Status | Evidence |
 |---|---|---|
@@ -33,8 +33,12 @@ between strangers, protected without trusting anyone. Aegis Gate is the trust la
 | Full deal through the web app: create → fund → buyer + seller approve → 2-of-3 payout | ✅ | tx `af093f5660469a67369d776a45674b17971a16f96f4231f6196800fc095f4526`, block 4,466,046 |
 | **Self-custody release in a real browser**: buyer and seller FROST shares made and kept in their browsers (WebAssembly); engine holds only the arbiter's share | ✅ | tx `bf754298f5d01723ab04f936461677c48d31f711ea3a910b51cb4a16044a5447`, block 4,466,532 |
 | **Dispute → refund** by buyer (browser key) + arbiter, completed after a deliberate engine crash mid-payout, no funds lost | ✅ | tx `ae74bc7347d3960fefb6740db7b2a77f66771831b35cc88cd64a0e442cc4addf`, block 4,466,552 |
+| **Browser-verified payout**: before signing, each browser rebuilds the escrow from its own key and checks every output against its on-chain commitment | ✅ | tx `aa395f0b647165bd79ceb9991b66583a4b359db6484b3b249af2a2b1261d3373`, block 4,466,648 |
+| Two separate browsers, end to end: key ceremony → matching security codes → funding → approve → verify → release | ✅ | tx `09ac6e494fa78e97730b20bdf61204fdac9306ad2eb0443bd513107ee4c3627d`, block 4,466,944 |
+| **First Aegis Gate escrow on Zcash mainnet**, self-custody, released by buyer + seller | ✅ | tx `766ca9869bdafa5c9235d7117abb25bba35c7f8ced1043282cd08a6aaa31c374`, mainnet block 3,506,939 |
+| 612 tampered transactions (single-byte changes to real mined PCZTs): none accepted with a different payout, fee or output | ✅ | `node apps/engine/review-selftest.mjs` |
 | Forged / malformed / tampered signatures rejected | ✅ | `cargo test` (7 + 4 tests), `apps/engine/signer-selftest.mjs` |
-| 22 error paths refused (bad input, wrong links, early or single-signer payouts, plain-text key shares, disagreeing keys) | ✅ | `node apps/engine/test-errors.mjs` |
+| 26 error paths refused (bad input, prices outside the limits, wrong-network addresses, wrong links, early or single-signer payouts, plain-text key shares, disagreeing keys, restarting with no session) | ✅ | `node apps/engine/test-errors.mjs` |
 | Browser refuses to sign a payout to an address not agreed for the outcome | ✅ | tested in the real browser |
 
 Testnet activated **NU7 at height 4,465,026**, hours before this escrow was funded. No
@@ -94,11 +98,12 @@ AEGIS_BIRTHDAY=<height before funding> ./poc/escrow.sh wallet
 
 ## Security
 
-See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md): arbiter collusion, blind signing (being
-fixed by the browser signer), viewing-key reach, quantum recoverability of FROST FVKs
+See [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md): arbiter collusion, the in-browser payout
+check that replaces blind signing, viewing-key reach, quantum recoverability of FROST FVKs
 (escrows are short-lived by design), relay metadata.
 
-**Testnet prototype. Do not use with mainnet funds yet.**
+**Mainnet beta.** Mainnet deals are limited to 0.0002 to 0.00045 ZEC (about $0.26 to $0.60)
+while the escrow engine runs on a single machine. Testnet deals have no limit.
 
 ## Credits
 

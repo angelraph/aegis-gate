@@ -21,11 +21,25 @@ function writeStore(deal, role, st) {
   localStorage.setItem(keyName(deal, role), S(st));
 }
 
+// Deal pages re-render every few seconds and each render may call a step. Steps are
+// async (network + WASM), so they must never overlap: an overlapping step could read
+// storage before another step's write and overwrite single-use secrets.
+const inFlight = new Map();
+async function exclusive(key, fn, idle) {
+  if (inFlight.get(key)) return idle;
+  inFlight.set(key, true);
+  try { return await fn(); } finally { inFlight.delete(key); }
+}
+
 export function hasKey(deal, role) { return !!readStore(deal, role).keyPackage; }
 export function inProgress(deal, role) { const s = readStore(deal, role); return !!s.round1Sent && !s.keyPackage; }
 
 /** Advance this browser's part of the key ceremony by one step. Returns a status word. */
 export async function ceremonyStep(api, deal, role, tq) {
+  return exclusive(`ceremony:${deal}:${role}`, () => ceremonyStepOnce(api, deal, role, tq), "busy");
+}
+
+async function ceremonyStepOnce(api, deal, role, tq) {
   await load();
   const me = ID[role];
   const st = readStore(deal, role);
@@ -88,6 +102,10 @@ export async function reviewSession(api, deal, role, tq, sg, expectedTo, network
  * browser computed itself are ever signed.
  */
 export async function signStep(api, deal, role, tq, sg, expectedTo, network = "test") {
+  return exclusive(`sign:${deal}:${role}`, () => signStepOnce(api, deal, role, tq, sg, expectedTo, network), { state: "busy" });
+}
+
+async function signStepOnce(api, deal, role, tq, sg, expectedTo, network) {
   await load();
   if (!sg || !sg.mine) return { state: "not-signer" };
   const st = readStore(deal, role);
@@ -97,10 +115,16 @@ export async function signStep(api, deal, role, tq, sg, expectedTo, network = "t
   if (mySpends.length !== sg.spends.length) throw new Error("Spend count doesn't match the transaction. Your browser refused to sign.");
 
   if (!sg.committed.includes(role)) {
-    const rounds = mySpends.map(() => J(frost.signCommit(S(st.keyPackage))));
-    st.nonces = { session: sg.id, list: rounds.map((r) => r.nonces) };
-    writeStore(deal, role, st);
-    await api(`/api/deals/${deal}/sign?t=${tq}`, { method: "POST", body: S({ stage: "commit", session: sg.id, commitments: rounds.map((r) => r.commitments) }) });
+    if (st.nonces?.session !== sg.id) {
+      const rounds = mySpends.map(() => J(frost.signCommit(S(st.keyPackage))));
+      st.nonces = { session: sg.id, list: rounds.map((r) => r.nonces), commitments: rounds.map((r) => r.commitments) };
+      writeStore(deal, role, st); // stored before sending, so a reload can't lose them
+    }
+    try {
+      await api(`/api/deals/${deal}/sign?t=${tq}`, { method: "POST", body: S({ stage: "commit", session: sg.id, commitments: st.nonces.commitments }) });
+    } catch (e) {
+      if (!/already received/i.test(e.message || "")) throw e; // our commitments are already in
+    }
     return { state: "committed", review: verified };
   }
   if (sg.packages && !sg.shared.includes(role)) {

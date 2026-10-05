@@ -520,6 +520,22 @@ const server = createServer(async (req, res) => {
         return send(res, 200, view(d, role));
       }
 
+      // A signer can abandon a stuck signing session (e.g. its browser lost the single-use
+      // nonces). Nothing has been broadcast, so the deal simply returns to its prior state.
+      if (parts[3] === "reset-signing" && deal.mode === "self" && req.method === "POST") {
+        const d = await withLock(deal.id, async () => {
+          const x = load(deal.id);
+          if (x.status !== "signing" || !x.signing) throw new Error("There's no signing session to restart.");
+          if (!x.signing.signers.includes(role) || role === "arbiter") throw new Error("Only one of the two signers can restart signing.");
+          delete x.signing;
+          x.approvals = {};
+          x.status = x.disputedBy ? "disputed" : "funded";
+          save(x);
+          return x;
+        });
+        return send(res, 200, view(d, role));
+      }
+
       // The transaction itself, for the two signers' browsers to review independently.
       if (parts[3] === "pczt" && deal.mode === "self" && req.method === "GET") {
         const sg = deal.signing;

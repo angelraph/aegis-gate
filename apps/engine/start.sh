@@ -46,8 +46,11 @@ point_site() {
   [[ "$live" == "$url" ]] && return 0
   printf '{ "url": "%s" }\n' "$url" > "$ROOT/apps/web/engine.json"
   local deploy
-  deploy="$(cd "$ROOT/apps/web" && vercel deploy --prod --yes 2>/dev/null | grep -oE 'https://aegis-gate-[a-z0-9]+-[a-z0-9-]+\.vercel\.app' | tail -1)"
-  [[ -n "$deploy" ]] || { log "vercel deploy failed"; return 1; }
+  local out
+  out="$(cd "$ROOT/apps/web" && vercel deploy --prod --yes 2>&1)"
+  deploy="$(printf '%s' "$out" | grep -oE 'https://aegis-gate-[a-z0-9]+-[a-z0-9-]+\.vercel\.app' | tail -1)"
+  [[ -n "$deploy" ]] || { log "vercel deploy failed: $(printf '%s' "$out" | tail -3 | tr '
+' ' ')"; return 1; }
   (cd "$ROOT/apps/web" && vercel alias set "$deploy" "$SITE_ALIAS" >/dev/null 2>&1) && log "site now points to $url"
 }
 
@@ -69,8 +72,10 @@ supervise() {
     engine_ok || { log "engine down, restarting"; start_engine; }
     if ! tunnel_ok; then
       sleep 5
-      tunnel_ok || { log "tunnel down, restarting"; start_tunnel && point_site "$(tunnel_url)"; }
+      tunnel_ok || { log "tunnel down, restarting"; start_tunnel; }
     fi
+    # Always make sure the site points at the live tunnel; retries a failed redeploy.
+    tunnel_ok && point_site "$(tunnel_url)"
     sleep 30
   done
 }

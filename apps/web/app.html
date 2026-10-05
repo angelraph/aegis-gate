@@ -172,9 +172,18 @@
         ver.hidden = false;
         ver.innerHTML = `<b>Verified on this device</b><span>Pays <b>${zec(v.payout)} ZEC</b> to the agreed address · network fee ${zec(v.review.fee)} ZEC · from this deal's escrow · every output matches its on-chain commitment</span>`;
       }
+      if (res.state === "busy") return; // a check is already running for this page
       if (el) el.textContent = { committed: "Checked and signed round one. Waiting for the other signer…", signed: "You signed. Broadcasting when both signatures are in…", "waiting-others": "Waiting for the other signer…" }[res.state] || "";
       if (res.state === "committed") signTimer = setTimeout(() => load(false), 1500);
-    } catch (x) { if (el) { el.textContent = x.message; el.classList.add("error"); } }
+    } catch (x) {
+      if (el) { el.textContent = x.message; el.classList.add("error"); }
+      const rs = $("#restartSigning"); if (rs) rs.hidden = false;
+    }
+  }
+
+  async function restartSigning(d) {
+    try { renderDeal(await api(`/api/deals/${d.id}/reset-signing?t=${tq()}`, { method: "POST" })); toast("Signing restarted. Approve again to sign fresh."); }
+    catch (x) { toast(x.message); }
   }
 
   function selfCustodyBlocks(d) {
@@ -206,7 +215,8 @@
         <p class="muted">To the ${sg.action === "release" ? "seller" : "buyer"}'s payout address:</p><code class="txid">${esc(sg.to)}</code>
         <p class="verified" id="verified" hidden></p>
         <p class="hint">Before signing, your browser fetches the transaction itself, rebuilds the escrow from your own key, and checks every output against its on-chain commitment. Keep this page open until both signatures are in.</p>
-        <p class="ceremony" id="signState">Checking the request…</p></section>`;
+        <p class="ceremony" id="signState">Checking the request…</p>
+        <button class="btn sm" type="button" id="restartSigning" hidden>Restart signing</button></section>`;
     }
     return html;
   }
@@ -410,6 +420,7 @@
     if (d.mode === "self" && d.role !== "arbiter") {
       if (d.status === "setting_up" || (signer && signer.inProgress(d.id, d.role))) runCeremony(d);
       if (d.status === "signing" && d.signing && d.signing.mine) runSigning(d);
+      const rsb = $("#restartSigning"); if (rsb) rsb.addEventListener("click", () => restartSigning(d));
       if (signer && signer.hasKey(d.id, d.role) && d.keys) {
         signer.securityCode(d.id, d.role, d.keys.boxKeys).then((r) => {
           const el = $("#dealCode"); if (!el || !r) return;
