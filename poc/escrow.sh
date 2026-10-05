@@ -246,9 +246,42 @@ PY
   "$dt" pczt -w "$WORK/wallet" send "$tx/signed.pczt" | tee "$tx/send.txt"
 }
 
+# Browser-signer flow, step 1: build and prove the payout, and write what the FROST
+# group must sign. Signing happens elsewhere (in the signers' browsers).
+cmd_prepare() {
+  local to="$1" zats="$2" memo="${3:-Aegis Gate escrow $DEAL}"
+  local dt tx="$WORK/payout-$(date +%s)"
+  dt="$(bin zcash-devtool)"
+  mkdir -p "$tx"
+  say "Building and proving the payout PCZT"
+  if [[ "$zats" == "max" ]]; then
+    "$dt" pczt -w "$WORK/wallet" create-max --address "$to" --memo "$memo" --output "$tx/created.pczt"
+  else
+    "$dt" pczt -w "$WORK/wallet" create --address "$to" --value "$zats" --memo "$memo" --output "$tx/created.pczt"
+  fi
+  "$dt" pczt -w "$WORK/wallet" prove "$tx/created.pczt" --output "$tx/proven.pczt"
+  "$dt" pczt -w "$WORK/wallet" inspect < "$tx/proven.pczt" > "$tx/inspect.txt" 2>&1 || true
+  "$(bin aegis)" inspect "$tx/proven.pczt" > "$tx/request.json"
+  echo "TXDIR=$tx"
+}
+
+# Browser-signer flow, step 2: apply the aggregated FROST signatures (each checked
+# against its rk) and broadcast.
+cmd_finish() {
+  local tx="$1" dt
+  dt="$(bin zcash-devtool)"
+  [[ -f "$tx/signatures.json" ]] || { echo "missing $tx/signatures.json"; exit 1; }
+  say "Applying FROST signatures (each is verified against its rk)"
+  "$(bin aegis)" apply "$tx/proven.pczt" --signatures "$tx/signatures.json" --out "$tx/signed.pczt"
+  say "Broadcasting"
+  "$dt" pczt -w "$WORK/wallet" send "$tx/signed.pczt" | tee "$tx/send.txt"
+}
+
 case "${1:-}" in
   certs|relay|stop|parties|dkg|escrow|wallet|status) "cmd_$1" ;;
   payout) shift; [[ $# -ge 4 ]] || { echo "usage: payout <ua> <zats> <signer1> <signer2> [memo]"; exit 2; }; cmd_payout "$@" ;;
+  prepare) shift; [[ $# -ge 2 ]] || { echo "usage: prepare <ua> <zats|max> [memo]"; exit 2; }; cmd_prepare "$@" ;;
+  finish) shift; [[ $# -ge 1 ]] || { echo "usage: finish <txdir>"; exit 2; }; cmd_finish "$@" ;;
   all) cmd_certs; cmd_relay; cmd_parties; cmd_dkg; cmd_escrow; cmd_wallet; cmd_status ;;
   *) sed -n '2,25p' "$0"; exit 2 ;;
 esac

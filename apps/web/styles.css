@@ -430,3 +430,13 @@ details.glass[open] summary::after { content: "–"; }
 .tagline { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; font: 500 0.95rem/1.2 var(--body); letter-spacing: .06em; color: var(--ink-2); }
 .tagline i { font: 600 0.72rem/1 var(--mono); font-style: normal; letter-spacing: .24em; text-transform: uppercase; color: var(--space); display: inline-flex; align-items: center; gap: 10px; }
 .tagline i::before, .tagline i::after { content: ""; width: 22px; height: 1.5px; background: var(--space); border-radius: 2px; }
+
+/* ---------- self-custody ---------- */
+.self-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px; border-radius: 12px; border: 1px solid color-mix(in oklab, var(--seller) 35%, var(--line)); background: color-mix(in oklab, var(--seller) 7%, transparent); cursor: pointer; }
+.self-opt input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--seller); }
+.self-opt b { display: block; font-size: 0.92rem; }
+.self-opt small { display: block; color: var(--ink-3); font-size: 0.82rem; }
+.ceremony { font: 500 0.88rem/1.5 var(--mono); color: var(--space); padding: 10px 12px; border-radius: 10px; background: color-mix(in oklab, var(--space) 9%, transparent); }
+.ceremony.error { color: var(--bad); background: color-mix(in oklab, var(--bad) 10%, transparent); }
+.mykey { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; }
+.mykey-dot { width: 12px; height: 12px; margin-top: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 5px color-mix(in oklab, var(--ok) 20%, transparent); }
