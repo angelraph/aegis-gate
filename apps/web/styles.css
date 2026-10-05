@@ -420,21 +420,13 @@ details.glass[open] summary::after { content: "–"; }
   .nav .btn.sm { padding: 0 12px; }
 }
 
-/* ---------- brand: gold + silver on deep black ---------- */
-:root { --gold: #b47d00; --gold-2: #8f6400; --silver: #6b6f82; --on-gold: #15110a; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gold: #f4b728; --gold-2: #f7cf3d; --silver: #d9dbe6; --field: #07080d; --field-2: #0d0f17; } }
-:root[data-theme="dark"] { --gold: #f4b728; --gold-2: #f7cf3d; --silver: #d9dbe6; --field: #07080d; --field-2: #0d0f17; }
-[data-space="gold"] { --space: var(--gold); }
+/* ---------- brand: logo mark, wordmark and tagline only; site palette unchanged ---------- */
+:root { --gold: #b47d00; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gold: #f4b728; } }
+:root[data-theme="dark"] { --gold: #f4b728; }
 .gold { color: var(--gold); }
-.brand-mark { width: 28px; height: 28px; filter: drop-shadow(0 2px 8px color-mix(in oklab, var(--gold) 35%, transparent)); }
+.brand-mark { width: 28px; height: 28px; }
 .brand > span { white-space: nowrap; }
-.btn.primary { background: linear-gradient(180deg, var(--gold-2), var(--gold)); color: var(--on-gold); border-color: transparent; box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 8px 24px -10px var(--gold); }
-.btn.primary:hover:not(:disabled) { filter: brightness(1.05); border-color: transparent; }
-.grad { background: linear-gradient(100deg, var(--gold-2), var(--gold) 45%, var(--silver) 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .tagline { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; font: 500 0.95rem/1.2 var(--body); letter-spacing: .06em; color: var(--ink-2); }
 .tagline i { font: 600 0.72rem/1 var(--mono); font-style: normal; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); display: inline-flex; align-items: center; gap: 10px; }
 .tagline i::before, .tagline i::after { content: ""; width: 22px; height: 1.5px; background: var(--gold); border-radius: 2px; }
-body[data-space="gold"] { background-image:
-    radial-gradient(1100px 560px at 15% -12%, color-mix(in oklab, var(--gold) 16%, transparent), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, color-mix(in oklab, var(--silver) 8%, transparent), transparent 60%),
-    radial-gradient(800px 600px at 50% 120%, color-mix(in oklab, var(--gold) 8%, transparent), transparent 60%); }
