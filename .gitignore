@@ -1,0 +1,7 @@
+target/
+poc/.work/
+node_modules/
+dist/
+*.pczt
+!packages/core/tests/fixtures/*.pczt
+.env

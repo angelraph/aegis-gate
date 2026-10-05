@@ -1,0 +1,28 @@
+[workspace]
+members = ["packages/core"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/angelraph/aegis-gate"
+
+# Zcash crates are pinned to one librustzcash commit (2026-10-02) because NU7 is active
+# on testnet from height 4,465,026 and only these pre-releases know its branch ID. The
+# PCZT-building tool (zcash-devtool) must be built against the same commit so both
+# sides agree on the PCZT format and the sighash.
+[workspace.dependencies]
+blake2b_simd = "1"
+clap = { version = "4.5.23", features = ["derive"] }
+eyre = "0.6.12"
+ff = "0.14"
+hex = "0.4.3"
+orchard = { version = "0.16", features = ["unstable-frost"] }
+pasta_curves = "0.6"
+pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["signer", "orchard"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.138"
+thiserror = "2.0.11"
+zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
+zcash_primitives = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
+zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }

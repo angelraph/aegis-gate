@@ -1,0 +1,2890 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 3f7203d..1a17f5d 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2,6 +2,17 @@
+ # It is not intended for manual editing.
+ version = 4
+ 
++[[package]]
++name = "addchain"
++version = "0.3.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "5665045de74fda906c0abfaec40cf2551f88c34dccea869f3fe950dde7209764"
++dependencies = [
++ "num-bigint 0.4.8",
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "adler2"
+ version = "2.0.1"
+@@ -18,6 +29,16 @@ dependencies = [
+  "generic-array",
+ ]
+ 
++[[package]]
++name = "aead"
++version = "0.6.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1973cfbc1a2daf9cf550e74e1f088c28e7f7d8c1e1418fb6c9dc5184b7e84c99"
++dependencies = [
++ "crypto-common 0.2.2",
++ "inout 0.2.2",
++]
++
+ [[package]]
+ name = "aes"
+ version = "0.8.4"
+@@ -25,20 +46,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "b169f7a6d4742236a0a00c541b845991d0ac43e546831af1249753ab4c3aa3a0"
+ dependencies = [
+  "cfg-if 1.0.4",
+- "cipher",
++ "cipher 0.4.4",
+  "cpufeatures 0.2.17",
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "aes"
++version = "0.9.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f8eb277bec05f56a0e0591f155a484cbd0f4f07ff2905051a48c72f004f7ed58"
++dependencies = [
++ "cipher 0.5.2",
++ "cpubits",
++ "cpufeatures 0.3.0",
++]
++
+ [[package]]
+ name = "aes-gcm"
+ version = "0.10.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "831010a0f742e1209b3bcea8fab6a8e149051ba6099432c8cb2cc117dec3ead1"
+ dependencies = [
+- "aead",
+- "aes",
+- "cipher",
++ "aead 0.5.2",
++ "aes 0.8.4",
++ "cipher 0.4.4",
+  "ctr",
+  "ghash",
+  "subtle",
+@@ -53,8 +85,8 @@ dependencies = [
+  "age-core",
+  "base64",
+  "bech32",
+- "chacha20poly1305",
+- "cipher",
++ "chacha20poly1305 0.10.1",
++ "cipher 0.4.4",
+  "cookie-factory",
+  "hkdf",
+  "hmac 0.12.1",
+@@ -86,7 +118,7 @@ checksum = "01d4375964d1501e5f1b32aef2ead573913893ff238448d4e9fdf1522d828656"
+ dependencies = [
+  "base64",
+  "bech32",
+- "chacha20poly1305",
++ "chacha20poly1305 0.10.1",
+  "cookie-factory",
+  "hkdf",
+  "hpke",
+@@ -494,15 +526,6 @@ dependencies = [
+  "bytemuck",
+ ]
+ 
+-[[package]]
+-name = "atomic-polyfill"
+-version = "1.0.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8cf2bce30dfe09ef0bfaef228b9d414faaf7e563035494d7fe092dba54b300f4"
+-dependencies = [
+- "critical-section",
+-]
+-
+ [[package]]
+ name = "atomic-waker"
+ version = "1.1.2"
+@@ -636,21 +659,19 @@ checksum = "32637268377fc7b10a8c6d51de3e7fba1ce5dd371a96e342b34e6078db558e7f"
+ 
+ [[package]]
+ name = "bellman"
+-version = "0.14.0"
++version = "0.15.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9afceed28bac7f9f5a508bca8aeeff51cdfa4770c0b967ac55c621e2ddfd6171"
++checksum = "973b16549796a1274a63e00159a03250e66e8263e2ac6344b1c9fdfe9b7a8325"
+ dependencies = [
+  "bitvec",
+  "blake2s_simd",
+  "byteorder",
+  "crossbeam-channel",
+- "ff",
+- "group",
+- "lazy_static",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "log",
+  "num_cpus",
+- "pairing",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "rayon",
+  "subtle",
+ ]
+@@ -707,16 +728,15 @@ dependencies = [
+ 
+ [[package]]
+ name = "bip32"
+-version = "0.6.0-pre.1"
++version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "143f5327f23168716be068f8e1014ba2ea16a6c91e8777bc8927da7b51e1df1f"
++checksum = "0271a2fe2a6f05231419e878b5f50152a5a6dbcc60c18855d924892ecc85a33a"
+ dependencies = [
+  "bs58",
+- "hmac 0.13.0-pre.4",
+- "rand_core 0.6.4",
+- "ripemd 0.2.0-pre.4",
++ "hmac 0.13.0",
++ "ripemd 0.2.0",
+  "secp256k1",
+- "sha2 0.11.0-pre.4",
++ "sha2 0.11.0",
+  "subtle",
+  "zeroize",
+ ]
+@@ -865,24 +885,25 @@ dependencies = [
+ 
+ [[package]]
+ name = "block-buffer"
+-version = "0.11.0-rc.3"
++version = "0.12.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3fd016a0ddc7cb13661bf5576073ce07330a693f8608a1320b4e20561cc12cdc"
++checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
+ dependencies = [
+- "hybrid-array",
++ "hybrid-array 0.4.15",
+ ]
+ 
+ [[package]]
+ name = "bls12_381"
+-version = "0.8.0"
++version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d7bc6d6292be3a19e6379786dac800f551e5865a5bb51ebbe3064ab80433f403"
++checksum = "18f887f26229478dcd0e0d063566b51c68fb55a38fba21799c5f3371a74ec61f"
+ dependencies = [
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "pairing",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "subtle",
++ "zeroize",
+ ]
+ 
+ [[package]]
+@@ -1026,11 +1047,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "cbc"
+-version = "0.1.2"
++version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "26b52a9543ae338f279b96b0b9fed9c8093744685043739079ce85cd58f289a6"
++checksum = "ce2dc9ee5f88d11e0beb842c88b33c8a5cf0d1329c4b19494af42b07dbfe8896"
+ dependencies = [
+- "cipher",
++ "cipher 0.5.2",
+ ]
+ 
+ [[package]]
+@@ -1079,7 +1100,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c3613f74bd2eac03dad61bd53dbe620703d4371614fe0bc3b9f04dd36fe4e818"
+ dependencies = [
+  "cfg-if 1.0.4",
+- "cipher",
++ "cipher 0.4.4",
+  "cpufeatures 0.2.17",
+ ]
+ 
+@@ -1090,6 +1111,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
+ dependencies = [
+  "cfg-if 1.0.4",
++ "cipher 0.5.2",
+  "cpufeatures 0.3.0",
+  "rand_core 0.10.1",
+ ]
+@@ -1100,13 +1122,25 @@ version = "0.10.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "10cd79432192d1c0f4e1a0fef9527696cc039165d729fb41b3f4f4f354c2dc35"
+ dependencies = [
+- "aead",
++ "aead 0.5.2",
+  "chacha20 0.9.1",
+- "cipher",
+- "poly1305",
++ "cipher 0.4.4",
++ "poly1305 0.8.0",
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "chacha20poly1305"
++version = "0.11.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "9b89e1c441e926b9c82a8d023f6e1b7ae0adcfaa7d621814e4d60789bac751cb"
++dependencies = [
++ "aead 0.6.1",
++ "chacha20 0.10.1",
++ "cipher 0.5.2",
++ "poly1305 0.9.1",
++]
++
+ [[package]]
+ name = "chrono"
+ version = "0.4.45"
+@@ -1155,10 +1189,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
+ dependencies = [
+  "crypto-common 0.1.7",
+- "inout",
++ "inout 0.1.4",
+  "zeroize",
+ ]
+ 
++[[package]]
++name = "cipher"
++version = "0.5.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "e8cf2a2c93cd704877c0858356ed03480ff301ee950b43f1cbe4573b088bfa6c"
++dependencies = [
++ "block-buffer 0.12.1",
++ "crypto-common 0.2.2",
++ "inout 0.2.2",
++]
++
+ [[package]]
+ name = "clang-sys"
+ version = "1.8.1"
+@@ -1210,6 +1255,12 @@ version = "1.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
+ 
++[[package]]
++name = "cmov"
++version = "0.5.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "0c9ea0ac24bc397ab3c98583a3c9ba74fa56b09a4449bbe172b9b1ddb016027a"
++
+ [[package]]
+ name = "coarsetime"
+ version = "0.1.37"
+@@ -1312,12 +1363,6 @@ dependencies = [
+  "crossbeam-utils",
+ ]
+ 
+-[[package]]
+-name = "const-crc32-nostd"
+-version = "1.3.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "808ac43170e95b11dd23d78aa9eaac5bea45776a602955552c4e833f3f0f823d"
+-
+ [[package]]
+ name = "const-oid"
+ version = "0.9.6"
+@@ -1434,6 +1479,12 @@ version = "0.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4df6f98652d30167eaeea34d77b730e07c8caba6df17bd4551842b9b8da01deb"
+ 
++[[package]]
++name = "cpubits"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "15b85f9c39137c3a891689859392b1bd49812121d0d61c9caf00d46ed5ce06ae"
++
+ [[package]]
+ name = "cpufeatures"
+ version = "0.2.17"
+@@ -1627,11 +1678,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "crypto-common"
+-version = "0.2.0-rc.1"
++version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b0b8ce8218c97789f16356e7896b3714f26c2ee1079b79c0b7ae7064bb9089fa"
++checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
+ dependencies = [
+- "hybrid-array",
++ "hybrid-array 0.4.15",
+ ]
+ 
+ [[package]]
+@@ -1650,7 +1701,16 @@ version = "0.9.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "0369ee1ad671834580515889b80f2ea915f23b8be8d0daa4bbaf2ac5c7590835"
+ dependencies = [
+- "cipher",
++ "cipher 0.4.4",
++]
++
++[[package]]
++name = "ctutils"
++version = "0.4.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
++dependencies = [
++ "cmov",
+ ]
+ 
+ [[package]]
+@@ -1899,17 +1959,6 @@ dependencies = [
+  "void",
+ ]
+ 
+-[[package]]
+-name = "derive-getters"
+-version = "0.5.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "74ef43543e701c01ad77d3a5922755c6a1d71b22d942cb8042be4994b380caff"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn 2.0.119",
+-]
+-
+ [[package]]
+ name = "derive_builder_core_fork_arti"
+ version = "0.11.2"
+@@ -1978,13 +2027,13 @@ dependencies = [
+ 
+ [[package]]
+ name = "digest"
+-version = "0.11.0-pre.9"
++version = "0.11.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cf2e3d6615d99707295a9673e889bf363a04b2a466bd320c65a72536f7577379"
++checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+ dependencies = [
+- "block-buffer 0.11.0-rc.3",
+- "crypto-common 0.2.0-rc.1",
+- "subtle",
++ "block-buffer 0.12.1",
++ "crypto-common 0.2.2",
++ "ctutils",
+ ]
+ 
+ [[package]]
+@@ -2160,9 +2209,9 @@ dependencies = [
+  "base16ct",
+  "crypto-bigint",
+  "digest 0.10.7",
+- "ff",
++ "ff 0.13.1",
+  "generic-array",
+- "group",
++ "group 0.13.0",
+  "hkdf",
+  "pkcs8",
+  "rand_core 0.6.4",
+@@ -2189,7 +2238,7 @@ version = "3.1.15"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1bf1fa3f06bbff1ea5b1a9c7b14aa992a39657db60a2759457328d7e058f49ee"
+ dependencies = [
+- "num-bigint",
++ "num-bigint 0.4.8",
+  "num-traits",
+  "proc-macro2",
+  "quote",
+@@ -2238,24 +2287,14 @@ dependencies = [
+  "syn 2.0.119",
+ ]
+ 
+-[[package]]
+-name = "equihash"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ab579d7cf78477773b03e80bc2f89702ef02d7112c711d54ca93dcdce68533d5"
+-dependencies = [
+- "blake2b_simd",
+- "byteorder",
+-]
+-
+ [[package]]
+ name = "equihash"
+ version = "0.3.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "306286e8dcc39ab3dfceb74c792ce8baffdab90591321d3ffaae64829734c37f"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "blake2b_simd",
+  "corez",
++ "document-features",
+ ]
+ 
+ [[package]]
+@@ -2314,8 +2353,7 @@ dependencies = [
+ [[package]]
+ name = "f4jumble"
+ version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0d42773cb15447644d170be20231a3268600e0c4cea8987d013b93ac973d3cf7"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "blake2b_simd",
+ ]
+@@ -2375,11 +2413,37 @@ version = "0.13.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c0b50bfb653653f9ca9095b427bed08ab8d75a137839d9ad64eb11810d5b6393"
+ dependencies = [
+- "bitvec",
+  "rand_core 0.6.4",
+  "subtle",
+ ]
+ 
++[[package]]
++name = "ff"
++version = "0.14.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "a1f686ab92a9fb0eaf188f6c6c87b89490baa6fdb0db4544ba4dc47f7942489f"
++dependencies = [
++ "bitvec",
++ "ff_derive",
++ "rand_core 0.10.1",
++ "subtle",
++]
++
++[[package]]
++name = "ff_derive"
++version = "0.14.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "241afe8c15ffa21933eaefe8a563af36fd9fc98a3e8a044e8f7db52eb1fae3d8"
++dependencies = [
++ "addchain",
++ "num-bigint 0.4.8",
++ "num-integer",
++ "num-traits",
++ "proc-macro2",
++ "quote",
++ "syn 2.0.119",
++]
++
+ [[package]]
+ name = "fiat-crypto"
+ version = "0.2.9"
+@@ -2561,53 +2625,18 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+ 
+ [[package]]
+ name = "fpe"
+-version = "0.6.1"
++version = "0.7.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "26c4b37de5ae15812a764c958297cfc50f5c010438f60c6ce75d11b802abd404"
++checksum = "5045d51a6a5e85e0a18d909eedd270c4d82ad634fee57ba707692fb3b1add5a7"
+ dependencies = [
+  "cbc",
+- "cipher",
++ "cipher 0.5.2",
+  "libm",
+- "num-bigint",
++ "num-bigint 0.5.1",
+  "num-integer",
+  "num-traits",
+ ]
+ 
+-[[package]]
+-name = "frost-core"
+-version = "3.0.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "81ef2787af391c7e8bedc037a3b9ea03dde803fbd93e778e6bb369547800e5cd"
+-dependencies = [
+- "byteorder",
+- "const-crc32-nostd",
+- "derive-getters",
+- "document-features",
+- "hex",
+- "itertools 0.14.0",
+- "postcard",
+- "rand_core 0.6.4",
+- "serde",
+- "serdect",
+- "thiserror 2.0.19",
+- "visibility",
+- "zeroize",
+- "zeroize_derive",
+-]
+-
+-[[package]]
+-name = "frost-rerandomized"
+-version = "3.0.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8f4c5cedd2426728adef2c0b1720f57676354c473836d1ccc50d0f0d1c91942b"
+-dependencies = [
+- "derive-getters",
+- "document-features",
+- "frost-core",
+- "hex",
+- "rand_core 0.6.4",
+-]
+-
+ [[package]]
+ name = "fs-mistrust"
+ version = "0.12.0"
+@@ -2859,18 +2888,45 @@ version = "0.2.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9985c9503b412198aa4197559e9a318524ebc4519c229bfa05a535828c950b9d"
+ 
++[[package]]
++name = "groth16"
++version = "0.2.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "8bb1e0bde2dbacd81474ae216c5dd4901307bd1c75fd26ed49590e88048c8442"
++dependencies = [
++ "bellman",
++ "byteorder",
++ "ff 0.14.0",
++ "group 0.14.0",
++ "pairing",
++ "rand 0.10.2",
++ "rand_core 0.10.1",
++ "rayon",
++]
++
+ [[package]]
+ name = "group"
+ version = "0.13.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63"
+ dependencies = [
+- "ff",
+- "memuse",
++ "ff 0.13.1",
+  "rand_core 0.6.4",
+  "subtle",
+ ]
+ 
++[[package]]
++name = "group"
++version = "0.14.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7fd1a1c7a5206c5b7a3f5a0d7ccd3ff85d0c8f5133d62a02680255b0004af5f4"
++dependencies = [
++ "ff 0.14.0",
++ "memuse",
++ "rand_core 0.10.1",
++ "subtle",
++]
++
+ [[package]]
+ name = "h2"
+ version = "0.4.15"
+@@ -2903,19 +2959,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "halo2_gadgets"
+-version = "0.5.0"
++version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fb2a697cad929f706b7987fe804ad57d43622cd37463ba7e4d662a926fdcfea3"
++checksum = "8862c7f2d99964760016516103fcc621352e77a505b22b0fc25140f09e4b8bb0"
+ dependencies = [
+  "arrayvec",
+  "bitvec",
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "halo2_poseidon",
+  "halo2_proofs",
+- "lazy_static",
+  "pasta_curves",
+- "rand 0.8.7",
++ "rand 0.10.2",
+  "sinsemilla",
+  "subtle",
+  "uint 0.9.5",
+@@ -2929,42 +2984,34 @@ checksum = "47716fe1ae67969c5e0b2ef826f32db8c3be72be325e1aa3c1951d06b5575ec5"
+ 
+ [[package]]
+ name = "halo2_poseidon"
+-version = "0.1.0"
++version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0fa3da60b81f02f9b33ebc6252d766f843291fb4d2247a07ae73d20b791fc56f"
++checksum = "800f76fa421515e2729192e3863bb0a58f30fe17a9a165ea5e778a157adeb579"
+ dependencies = [
+  "bitvec",
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "pasta_curves",
+ ]
+ 
+ [[package]]
+ name = "halo2_proofs"
+-version = "0.3.3"
++version = "0.4.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "576d38119e960ec18628c2eb7558a3a06fcb9fd1e003a36f40f0496919a0aaa9"
++checksum = "f5af2a9457f494f862cd07b81c2e98a19f50b06a2057b7569450d7c26b167d1c"
+ dependencies = [
+  "blake2b_simd",
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "halo2_legacy_pdqsort",
+- "indexmap 1.9.3",
++ "indexmap 2.14.0",
+  "maybe-rayon",
+  "pasta_curves",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_core 0.10.1",
+  "tracing",
+ ]
+ 
+-[[package]]
+-name = "hash32"
+-version = "0.2.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b0c35f58762feb77d74ebe43bdbc3210f09be9fe6742234d573bacc26ed92b67"
+-dependencies = [
+- "byteorder",
+-]
+-
+ [[package]]
+ name = "hashbrown"
+ version = "0.12.3"
+@@ -3014,20 +3061,6 @@ dependencies = [
+  "hashbrown 0.15.5",
+ ]
+ 
+-[[package]]
+-name = "heapless"
+-version = "0.7.17"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cdc6457c0eb62c71aac4bc17216026d8410337c4126773b9c5daba343f17964f"
+-dependencies = [
+- "atomic-polyfill",
+- "hash32",
+- "rustc_version",
+- "serde",
+- "spin",
+- "stable_deref_trait",
+-]
+-
+ [[package]]
+ name = "heck"
+ version = "0.5.0"
+@@ -3066,11 +3099,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "hmac"
+-version = "0.13.0-pre.4"
++version = "0.13.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e4b1fb14e4df79f9406b434b60acef9f45c26c50062cccf1346c6103b8c47d58"
++checksum = "6303bc9732ae41b04cb554b844a762b4115a61bfaa81e3e83050991eeb56863f"
+ dependencies = [
+- "digest 0.11.0-pre.9",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -3094,9 +3127,9 @@ version = "0.12.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4917627a14198c3603282c5158b815ad5534795451d3c074b53cf3cee0960b11"
+ dependencies = [
+- "aead",
++ "aead 0.5.2",
+  "aes-gcm",
+- "chacha20poly1305",
++ "chacha20poly1305 0.10.1",
+  "digest 0.10.7",
+  "generic-array",
+  "hkdf",
+@@ -3178,6 +3211,15 @@ dependencies = [
+  "typenum",
+ ]
+ 
++[[package]]
++name = "hybrid-array"
++version = "0.4.15"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "27f864f10dfb56725ce5ce5472bc52252c8f93a4ab86327122cebf62c5f59a17"
++dependencies = [
++ "typenum",
++]
++
+ [[package]]
+ name = "hyper"
+ version = "1.11.0"
+@@ -3371,21 +3413,21 @@ checksum = "89194689a993ab15268672e99e7b0e19da2da3268ac682e8f02d29d4d1434cd7"
+ 
+ [[package]]
+ name = "incrementalmerkletree"
+-version = "0.8.2"
++version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "30821f91f0fa8660edca547918dc59812893b497d07c1144f326f07fdd94aba9"
++checksum = "c3b0c166f7f34e02988f84a7bed22be9707b1569acc6aeb3afaf34152d0e0400"
+ dependencies = [
+  "either",
+  "proptest",
+- "rand 0.8.7",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_core 0.10.1",
+ ]
+ 
+ [[package]]
+ name = "incrementalmerkletree-testing"
+-version = "0.3.0"
++version = "0.4.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ad20fb6cf815e76ce9b9eca74f347740ab99059fe4b5e4a002403d0441a02983"
++checksum = "e9109f51a90d7533a645acef89934a07893e2516dd7d7c250459643c7150d10f"
+ dependencies = [
+  "incrementalmerkletree",
+  "proptest",
+@@ -3452,6 +3494,15 @@ dependencies = [
+  "generic-array",
+ ]
+ 
++[[package]]
++name = "inout"
++version = "0.2.2"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "4250ce6452e92010fdf7268ccc5d14faa80bb12fc741938534c58f16804e03c7"
++dependencies = [
++ "hybrid-array 0.4.15",
++]
++
+ [[package]]
+ name = "instability"
+ version = "0.3.10"
+@@ -3655,16 +3706,17 @@ dependencies = [
+ 
+ [[package]]
+ name = "jubjub"
+-version = "0.10.0"
++version = "0.11.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8499f7a74008aafbecb2a2e608a3e13e4dd3e84df198b604451efe93f2de6e61"
++checksum = "95fdd9a071f72385ed8b17d819f273d73c3887a93d34d2ac1419fca5b25dbbd2"
+ dependencies = [
+  "bitvec",
+  "bls12_381",
+- "ff",
+- "group",
+- "rand_core 0.6.4",
++ "ff 0.14.0",
++ "group 0.14.0",
++ "rand_core 0.10.1",
+  "subtle",
++ "zeroize",
+ ]
+ 
+ [[package]]
+@@ -4047,7 +4099,7 @@ version = "0.2.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "8de49b3df74c35498c0232031bb7e85f9389f913e2796169c8ab47a53993a18f"
+ dependencies = [
+- "hybrid-array",
++ "hybrid-array 0.2.3",
+  "kem",
+  "rand_core 0.6.4",
+  "sha3",
+@@ -4299,6 +4351,16 @@ dependencies = [
+  "num-traits",
+ ]
+ 
++[[package]]
++name = "num-bigint"
++version = "0.5.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "93e7820bc0a80a0238e650327316f929ba18d5be054b647490a3a6a339f3e7c0"
++dependencies = [
++ "num-integer",
++ "num-traits",
++]
++
+ [[package]]
+ name = "num-bigint-dig"
+ version = "0.8.6"
+@@ -4367,7 +4429,7 @@ version = "0.4.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
+ dependencies = [
+- "num-bigint",
++ "num-bigint 0.4.8",
+  "num-integer",
+  "num-traits",
+ ]
+@@ -4502,18 +4564,18 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
+ 
+ [[package]]
+ name = "orchard"
+-version = "0.15.3"
++version = "0.16.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e8b67beade27dbebdbfee0819e23170b0b263dc7b4f558ee936151716baf6e1f"
++checksum = "4ae7ceb7b5387bd76cf3c0712f57708795c925cecf097036cedb60b5c3706e8f"
+ dependencies = [
+- "aes",
++ "aes 0.9.2",
+  "bitvec",
+  "blake2b_simd",
+  "corez",
+- "ff",
++ "ff 0.14.0",
+  "fpe",
+  "getset",
+- "group",
++ "group 0.14.0",
+  "halo2_gadgets",
+  "halo2_poseidon",
+  "halo2_proofs",
+@@ -4524,8 +4586,8 @@ dependencies = [
+  "nonempty",
+  "pasta_curves",
+  "proptest",
+- "rand 0.8.7",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_core 0.10.1",
+  "reddsa",
+  "serde",
+  "sinsemilla",
+@@ -4534,6 +4596,7 @@ dependencies = [
+  "visibility",
+  "zcash_note_encryption",
+  "zcash_spec",
++ "zeroize",
+  "zip32",
+ ]
+ 
+@@ -4604,11 +4667,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "pairing"
+-version = "0.23.0"
++version = "0.24.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "81fec4625e73cf41ef4bb6846cafa6d44736525f442ba45e407c4a000a13996f"
++checksum = "33f6413397336802d16a342e69a5bd9c8b8cc2fa9fc9298044cd3443f77f1010"
+ dependencies = [
+- "group",
++ "group 0.14.0",
+ ]
+ 
+ [[package]]
+@@ -4677,17 +4740,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "pasta_curves"
+-version = "0.5.1"
++version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d3e57598f73cc7e1b2ac63c79c517b31a0877cd7c402cdcaa311b5208de7a095"
++checksum = "7ec2f82051d06ea52d7ec6a47546c592fc52392b6040e503e05a764dd10dd1de"
+ dependencies = [
+  "blake2b_simd",
+- "ff",
+- "group",
++ "ff 0.14.0",
++ "group 0.14.0",
+  "lazy_static",
+- "rand 0.8.7",
++ "rand 0.10.2",
+  "static_assertions",
+  "subtle",
++ "zeroize",
+ ]
+ 
+ [[package]]
+@@ -4721,31 +4785,32 @@ dependencies = [
+ 
+ [[package]]
+ name = "pczt"
+-version = "0.9.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a5592f4f3eba7f9344cc423f45b6e65911e0630c9b89968d5a20792aadd5a0eb"
++version = "0.10.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "blake2b_simd",
+  "bls12_381",
+  "document-features",
+- "ff",
++ "ff 0.14.0",
+  "getset",
+  "jubjub",
+  "nonempty",
+  "orchard",
+  "pasta_curves",
+  "postcard",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "redjubjub",
+  "sapling-crypto",
+  "secp256k1",
+  "serde",
+  "serde_with",
++ "subtle",
+  "zcash_note_encryption",
+  "zcash_primitives",
+  "zcash_protocol",
+  "zcash_script",
+  "zcash_transparent",
++ "zeroize",
+ ]
+ 
+ [[package]]
+@@ -5039,7 +5104,17 @@ checksum = "8159bd90725d2df49889a078b54f4f79e87f1f8a8444194cdca81d38f5393abf"
+ dependencies = [
+  "cpufeatures 0.2.17",
+  "opaque-debug",
+- "universal-hash",
++ "universal-hash 0.5.1",
++]
++
++[[package]]
++name = "poly1305"
++version = "0.9.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "6e2d0073b297041425c7c3df6eb4792d598a15323fe63346852b092eca02904c"
++dependencies = [
++ "cpufeatures 0.3.0",
++ "universal-hash 0.6.1",
+ ]
+ 
+ [[package]]
+@@ -5051,7 +5126,7 @@ dependencies = [
+  "cfg-if 1.0.4",
+  "cpufeatures 0.2.17",
+  "opaque-debug",
+- "universal-hash",
++ "universal-hash 0.5.1",
+ ]
+ 
+ [[package]]
+@@ -5093,7 +5168,6 @@ dependencies = [
+  "cobs",
+  "embedded-io 0.4.0",
+  "embedded-io 0.6.1",
+- "heapless",
+  "serde",
+ ]
+ 
+@@ -5439,6 +5513,16 @@ dependencies = [
+  "rand_core 0.9.5",
+ ]
+ 
++[[package]]
++name = "rand_chacha"
++version = "0.10.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "3e6af7f3e25ded52c41df4e0b1af2d047e45896c2f3281792ed68a1c243daedb"
++dependencies = [
++ "ppv-lite86",
++ "rand_core 0.10.1",
++]
++
+ [[package]]
+ name = "rand_core"
+ version = "0.6.4"
+@@ -5465,12 +5549,12 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
+ 
+ [[package]]
+ name = "rand_distr"
+-version = "0.4.3"
++version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
++checksum = "4d431c2703ccf129de4d45253c03f49ebb22b97d6ad79ee3ecfc7e3f4862c1d8"
+ dependencies = [
+  "num-traits",
+- "rand 0.8.7",
++ "rand 0.10.2",
+ ]
+ 
+ [[package]]
+@@ -5699,18 +5783,17 @@ checksum = "03251193000f4bd3b042892be858ee50e8b3719f2b08e5833ac4353724632430"
+ 
+ [[package]]
+ name = "reddsa"
+-version = "0.5.2"
++version = "0.6.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4784b85c8bfd17b36b86e664e6e504ecdb586001086ee23749e4a633bbb84832"
++checksum = "4a70b6dbd7b3277cbd4d89ee750a30bebab3b9951ee4e166ce15c00975fe410f"
+ dependencies = [
+  "blake2b_simd",
+  "byteorder",
+- "frost-rerandomized",
+- "group",
++ "group 0.14.0",
+  "hex",
+  "jubjub",
+  "pasta_curves",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "serde",
+  "thiserror 2.0.19",
+  "zeroize",
+@@ -5718,13 +5801,13 @@ dependencies = [
+ 
+ [[package]]
+ name = "redjubjub"
+-version = "0.8.0"
++version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "89b0ac1bc6bb3696d2c6f52cff8fba57238b81da8c0214ee6cd146eb8fde364e"
++checksum = "19ff57b3369b472353110bea305ced2612a1380e2d2079dd26c200ed42064421"
+ dependencies = [
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "reddsa",
+- "thiserror 1.0.69",
++ "thiserror 2.0.19",
+  "zeroize",
+ ]
+ 
+@@ -5856,11 +5939,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "ripemd"
+-version = "0.2.0-pre.4"
++version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e48cf93482ea998ad1302c42739bc73ab3adc574890c373ec89710e219357579"
++checksum = "4dd4211456b4172d7e44261920c25acf07367c4f04bb5f5d54fc21b090d9b159"
+ dependencies = [
+- "digest 0.11.0-pre.9",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -6156,7 +6239,7 @@ version = "0.10.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "97a22f5af31f73a954c10289c93e8a50cc23d971e80ee446f1f6f7137a088213"
+ dependencies = [
+- "cipher",
++ "cipher 0.4.4",
+ ]
+ 
+ [[package]]
+@@ -6179,11 +6262,11 @@ dependencies = [
+ 
+ [[package]]
+ name = "sapling-crypto"
+-version = "0.7.0"
++version = "0.9.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2d70756ede56b5e4dd417979777bd87ddb83dfcbd0815dbf8175a9920537f8a0"
++checksum = "4a2cbdcfeef20006adf72699cd466f21fe349674277cc05d3fc9b7302db7b182"
+ dependencies = [
+- "aes",
++ "aes 0.9.2",
+  "bellman",
+  "bitvec",
+  "blake2b_simd",
+@@ -6191,23 +6274,25 @@ dependencies = [
+  "bls12_381",
+  "corez",
+  "document-features",
+- "ff",
++ "ff 0.14.0",
+  "fpe",
+  "getset",
+- "group",
++ "groth16",
++ "group 0.14.0",
+  "hex",
+  "incrementalmerkletree",
+  "jubjub",
+  "lazy_static",
+  "memuse",
+  "proptest",
+- "rand 0.8.7",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_core 0.10.1",
+  "redjubjub",
+  "subtle",
+  "tracing",
+  "zcash_note_encryption",
+  "zcash_spec",
++ "zeroize",
+  "zip32",
+ ]
+ 
+@@ -6298,19 +6383,20 @@ dependencies = [
+ 
+ [[package]]
+ name = "secp256k1"
+-version = "0.29.1"
++version = "0.33.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9465315bc9d4566e1724f0fffcbcc446268cb522e60f9a27bcded6b19c108113"
++checksum = "d7f404a8dab7a7a5a631e741d8699aa9c8e1d689fc26ccf897c7187565490b69"
+ dependencies = [
++ "rand 0.9.5",
+  "secp256k1-sys",
+  "serde",
+ ]
+ 
+ [[package]]
+ name = "secp256k1-sys"
+-version = "0.10.1"
++version = "0.14.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d4387882333d3aa8cb20530a17c69a3752e97837832f34f6dccc760e715001d9"
++checksum = "f6b2992d4a3cd244539a7d5d0966aadbe5ca7fb868a5d7e38c29499b9e709bbd"
+ dependencies = [
+  "cc",
+ ]
+@@ -6458,16 +6544,6 @@ dependencies = [
+  "syn 2.0.119",
+ ]
+ 
+-[[package]]
+-name = "serdect"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a84f14a19e9a014bb9f4512488d9829a68e04ecabffb0f9904cd1ace94598177"
+-dependencies = [
+- "base16ct",
+- "serde",
+-]
+-
+ [[package]]
+ name = "sha1"
+ version = "0.10.7"
+@@ -6492,13 +6568,13 @@ dependencies = [
+ 
+ [[package]]
+ name = "sha2"
+-version = "0.11.0-pre.4"
++version = "0.11.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "540c0893cce56cdbcfebcec191ec8e0f470dd1889b6e7a0b503e310a94a168f5"
++checksum = "446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4"
+ dependencies = [
+  "cfg-if 1.0.4",
+- "cpufeatures 0.2.17",
+- "digest 0.11.0-pre.9",
++ "cpufeatures 0.3.0",
++ "digest 0.11.3",
+ ]
+ 
+ [[package]]
+@@ -6522,9 +6598,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "shardtree"
+-version = "0.7.1"
++version = "0.8.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8147447aed7be4736e271825b8c3a4432efb7182e71363169b572371ddef452e"
++checksum = "211c5ae6ff1fda9efe2cd8b90737744b3b3989f98740319284946bf110b862ed"
+ dependencies = [
+  "bitflags 2.13.1",
+  "either",
+@@ -6619,11 +6695,11 @@ checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+ 
+ [[package]]
+ name = "sinsemilla"
+-version = "0.1.0"
++version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3d268ae0ea06faafe1662e9967cd4f9022014f5eeb798e0c302c876df8b7af9c"
++checksum = "72744738b764bb3bb7bb5dcf71b62d19c2de8a09f850a7388f6088f244037299"
+ dependencies = [
+- "group",
++ "group 0.14.0",
+  "pasta_curves",
+  "subtle",
+ ]
+@@ -6704,7 +6780,7 @@ version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "caac132742f0d33c3af65bfcde7f6aa8f62f0e991d80db99149eb9d44708784f"
+ dependencies = [
+- "cipher",
++ "cipher 0.4.4",
+  "ssh-encoding",
+ ]
+ 
+@@ -7959,7 +8035,7 @@ version = "0.35.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "95cb3920ea326ba2bb7c2674293655d045a1112eb93cc8ddcbf948bb59307a97"
+ dependencies = [
+- "aes",
++ "aes 0.8.4",
+  "base64ct",
+  "ctr",
+  "curve25519-dalek",
+@@ -8079,7 +8155,7 @@ dependencies = [
+  "amplify",
+  "base64ct",
+  "bitflags 2.13.1",
+- "cipher",
++ "cipher 0.4.4",
+  "derive-deftly",
+  "derive_builder_fork_arti",
+  "derive_more",
+@@ -8156,7 +8232,7 @@ dependencies = [
+  "bytes",
+  "caret",
+  "cfg-if 1.0.4",
+- "cipher",
++ "cipher 0.4.4",
+  "coarsetime",
+  "criterion-cycles-per-byte",
+  "derive-deftly",
+@@ -8615,6 +8691,16 @@ dependencies = [
+  "subtle",
+ ]
+ 
++[[package]]
++name = "universal-hash"
++version = "0.6.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "f4987bdc12753382e0bec4a65c50738ffaabc998b9cdd1f952fb5f39b0048a96"
++dependencies = [
++ "crypto-common 0.2.2",
++ "ctutils",
++]
++
+ [[package]]
+ name = "untrusted"
+ version = "0.9.0"
+@@ -9479,9 +9565,10 @@ dependencies = [
+  "clap",
+  "crossterm",
+  "ed25519-zebra",
+- "equihash 0.2.0",
++ "equihash",
+  "futures-util",
+- "group",
++ "groth16",
++ "group 0.14.0",
+  "hex",
+  "hyper-util",
+  "image",
+@@ -9497,7 +9584,7 @@ dependencies = [
+  "phf 0.11.3",
+  "prost",
+  "qrcode",
+- "rand 0.8.7",
++ "rand 0.10.2",
+  "ratatui",
+  "rayon",
+  "regex",
+@@ -9547,9 +9634,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_address"
+-version = "0.13.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5a854b28c07dba372f4410ea8ad62b4bf7d5c2bf8be32fc4b31bc0db6521a975"
++version = "0.14.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "bech32",
+  "bs58",
+@@ -9561,9 +9647,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_client_backend"
+-version = "0.24.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "07ad58d8ca5daacbc089bf82ec09e45cf2a8be40adeb40b9399b16545c81a528"
++version = "0.25.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "ambassador",
+  "arti-client",
+@@ -9580,7 +9665,7 @@ dependencies = [
+  "fs-mistrust",
+  "futures-util",
+  "getset",
+- "group",
++ "group 0.14.0",
+  "hex",
+  "http-body-util",
+  "hyper",
+@@ -9596,9 +9681,9 @@ dependencies = [
+  "postcard",
+  "proptest",
+  "prost",
+- "rand 0.8.7",
+- "rand_chacha 0.3.1",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_chacha 0.10.0",
++ "rand_core 0.10.1",
+  "rayon",
+  "rust_decimal",
+  "sapling-crypto",
+@@ -9635,9 +9720,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_client_sqlite"
+-version = "0.22.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "dd92e4334619b1e3f67019254049318ec0d0240a3c15d853bdf2ac4bba597078"
++version = "0.23.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "ambassador",
+  "bip32",
+@@ -9645,7 +9729,7 @@ dependencies = [
+  "bs58",
+  "byteorder",
+  "document-features",
+- "group",
++ "group 0.14.0",
+  "hex",
+  "incrementalmerkletree",
+  "jubjub",
+@@ -9655,9 +9739,9 @@ dependencies = [
+  "pastey 0.2.3",
+  "pczt",
+  "prost",
+- "rand 0.8.7",
+- "rand_chacha 0.3.1",
+- "rand_core 0.6.4",
++ "rand 0.10.2",
++ "rand_chacha 0.10.0",
++ "rand_core 0.10.1",
+  "rand_distr",
+  "regex",
+  "rusqlite",
+@@ -9688,9 +9772,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_encoding"
+-version = "0.4.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1440921903cdb86133fb9e2fe800be488015db2939a30bedb413078a1acb0306"
++version = "0.5.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "corez",
+  "hex",
+@@ -9699,9 +9782,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_keys"
+-version = "0.16.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "def800f128e459eedebc900f36f408eaf0687634128dcf64ecfeaeebc3e16c14"
++version = "0.17.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "bech32",
+  "bip32",
+@@ -9711,12 +9793,12 @@ dependencies = [
+  "byteorder",
+  "corez",
+  "document-features",
+- "group",
++ "group 0.14.0",
+  "memuse",
+  "nonempty",
+  "orchard",
+  "proptest",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "sapling-crypto",
+  "secrecy 0.8.0",
+  "subtle",
+@@ -9730,22 +9812,21 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_note_encryption"
+-version = "0.4.2"
++version = "0.5.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e1cb1b9170c94370e3d66c5cc0877661db743337588b64de7711239eed462198"
++checksum = "4812d133908ebf1a1c91d2411a109f63a863a152633db1fc7fbb0f774edeae30"
+ dependencies = [
+- "chacha20 0.9.1",
+- "chacha20poly1305",
+- "cipher",
+- "rand_core 0.6.4",
++ "chacha20 0.10.1",
++ "chacha20poly1305 0.11.0",
++ "cipher 0.5.2",
++ "rand_core 0.10.1",
+  "subtle",
+ ]
+ 
+ [[package]]
+ name = "zcash_pool_migration"
+-version = "0.1.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6188c544911aad647bdb0730d18a0309991da1ccbbdab0415d4ef3113ecadcb3"
++version = "0.2.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "blake2b_simd",
+  "corez",
+@@ -9754,7 +9835,7 @@ dependencies = [
+  "libm",
+  "orchard",
+  "pczt",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "shardtree",
+  "zcash_client_backend",
+  "zcash_keys",
+@@ -9765,17 +9846,14 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_primitives"
+-version = "0.30.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "403d5be1e96339534be098e3377fb8a78d68ca7585b1780133d884b810277418"
++version = "0.31.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "blake2b_simd",
+- "block-buffer 0.11.0-rc.3",
+  "corez",
+- "crypto-common 0.2.0-rc.1",
+  "document-features",
+- "equihash 0.3.0",
+- "ff",
++ "equihash",
++ "ff 0.14.0",
+  "hex",
+  "incrementalmerkletree",
+  "jubjub",
+@@ -9783,7 +9861,7 @@ dependencies = [
+  "nonempty",
+  "orchard",
+  "proptest",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "redjubjub",
+  "sapling-crypto",
+  "secp256k1",
+@@ -9797,19 +9875,19 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_proofs"
+-version = "0.30.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ea125021aaa749e966989c7f7aaa18afe2f89474573f5f0dfac8b98083a6d095"
++version = "0.31.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "bellman",
+  "blake2b_simd",
+  "bls12_381",
+  "document-features",
+- "group",
++ "groth16",
++ "group 0.14.0",
+  "home",
+  "jubjub",
+  "known-folders",
+- "rand_core 0.6.4",
++ "rand_core 0.10.1",
+  "redjubjub",
+  "sapling-crypto",
+  "tracing",
+@@ -9820,9 +9898,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_protocol"
+-version = "0.10.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "314329b91ec4bbb517441840e47d0b2029bf0b946f086980c96c889c2d92dc5d"
++version = "0.11.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "corez",
+  "document-features",
+@@ -9836,9 +9913,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_script"
+-version = "0.4.5"
++version = "0.6.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2f872800287d118be71bdf6fe8c869c6a6ff6fb0a5762f68fb2af54c97edf0f2"
++checksum = "10106859d08a2a4119af8a0fa8db72afe35647768b562f94b7a2124adad41275"
+ dependencies = [
+  "bip32",
+  "bitflags 2.13.1",
+@@ -9862,9 +9939,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "zcash_transparent"
+-version = "0.10.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "547c012778bae17f58007731af074d638aa146ab0ecfc120adebf23d049aff6c"
++version = "0.11.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "bip32",
+  "bs58",
+@@ -9944,22 +10020,22 @@ dependencies = [
+ 
+ [[package]]
+ name = "zip32"
+-version = "0.2.1"
++version = "0.3.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b64bf5186a8916f7a48f2a98ef599bf9c099e2458b36b819e393db1c0e768c4b"
++checksum = "601ab4bc5f8312fa39f5411e07eb66b538687064c6e936b34eaa78f1e99ebe4d"
+ dependencies = [
+  "bech32",
+  "blake2b_simd",
+  "memuse",
+  "subtle",
+  "zcash_spec",
++ "zeroize",
+ ]
+ 
+ [[package]]
+ name = "zip321"
+-version = "0.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e0180028b8807c60498f01eb805a125eed095ab4c4a1737635c80e6ef7cb0a9c"
++version = "0.10.0-pre.0"
++source = "git+https://github.com/zcash/librustzcash.git?rev=9c5705f56517c040c50f96d29f1ff15a9383f3e0#9c5705f56517c040c50f96d29f1ff15a9383f3e0"
+ dependencies = [
+  "base64",
+  "nom 7.1.3",
+diff --git a/Cargo.toml b/Cargo.toml
+index ea4f1f8..a7e9f31 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -15,56 +15,56 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(zcash_unstable, values("nu
+ [dependencies]
+ anyhow = "1"
+ bip0039 = { version = "0.14", features = ["std", "all-languages"] }
+-bip32 = { version = "=0.6.0-pre.1", default-features = false, features = ["secp256k1-ffi"] }
++bip32 = { version = "0.6", default-features = false, features = ["secp256k1-ffi"] }
+ futures-util = "0.3"
+ hex = "0.4"
+-jubjub = "0.10"
++jubjub = "0.11"
+ nonempty = { version = "0.11", default-features = false }
+ prost = "0.14"
+-rayon = "1.7"
++rayon = "1.5"
+ ripemd = "0.1"
+ rusqlite = { version = "0.37", features = ["time"] }
+ schemerz = "0.2"
+-secp256k1 = { version = "0.29", features = ["serde"] }
++secp256k1 = { version = "0.33", features = ["serde"] }
+ secrecy = "0.8"
+-serde = "1.0"
+-time = "0.3"
+-tokio = { version = "1.21.0", features = ["fs", "io-std", "macros", "rt-multi-thread", "signal"] }
++serde = "1"
++time = "0.3.22"
++tokio = { version = "1", features = ["fs", "io-std", "macros", "rt-multi-thread", "signal"] }
+ tokio-socks = "0.5"
+ toml = "0.8"
+ tonic = { version = "0.14", features = ["gzip", "tls-webpki-roots"] }
+ tower = { version = "0.5", features = ["util"] }
+-hyper-util = { version = "0.1", features = ["tokio"] }
++hyper-util = { version = "0.1.1", features = ["tokio"] }
+ tracing = "0.1"
+ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+-uuid = "1"
++uuid = "1.1"
+ 
+ # Zcash
+-orchard = { version = "0.15.0", default-features = false }
+-pczt = { version = "0.9.1", features = ["io-finalizer", "orchard", "prover", "signer", "spend-finalizer", "transparent", "tx-extractor"] }
+-sapling = { package = "sapling-crypto", version = "0.7" }
+-transparent = { package = "zcash_transparent", version = "0.10.0", features = ["test-dependencies", "transparent-inputs"] }
+-zcash_address = "0.13.0"
+-zcash_client_backend = { version = "0.24.0", features = ["lightwalletd-tonic-tls-webpki-roots", "orchard", "pczt", "tor", "unstable"] }
++orchard = { version = "0.16", default-features = false }
++pczt = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["io-finalizer", "orchard", "prover", "signer", "spend-finalizer", "transparent", "tx-extractor"] }
++sapling = { package = "sapling-crypto", version = "0.9" }
++transparent = { package = "zcash_transparent", git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["test-dependencies", "transparent-inputs"] }
++zcash_address = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
++zcash_client_backend = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["lightwalletd-tonic-tls-webpki-roots", "orchard", "pczt", "tor", "unstable"] }
+ # `transparent-inputs` is enabled unconditionally: `zcash_client_backend`'s `pczt`
+ # feature (always on here) already forces `zcash_client_backend/transparent-inputs`,
+ # so `zcash_client_sqlite` must match or its `WalletRead`/`WalletWrite` impls fail to
+ # cover the trait's transparent methods.
+-zcash_client_sqlite = { version = "0.22.0", features = ["transparent-inputs", "unstable", "orchard", "serde", "test-dependencies"] }
+-zcash_keys = { version = "0.16.1", features = ["orchard", "sapling", "unstable", "unstable-frost"] }
+-zcash_pool_migration = { version = "0.1", features = ["wallet"] }
+-zcash_primitives = "0.30.0"
+-zcash_proofs = { version = "0.30.0", features = ["bundled-prover"] }
+-zcash_protocol = { version = "0.10.3", features = ["local-consensus"] }
+-zcash_script = "0.4"
+-zip32 = "0.2"
+-zip321 = "0.9"
++zcash_client_sqlite = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["transparent-inputs", "unstable", "orchard", "serde", "test-dependencies"] }
++zcash_keys = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["orchard", "sapling", "unstable", "unstable-frost"] }
++zcash_pool_migration = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["wallet"] }
++zcash_primitives = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
++zcash_proofs = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["bundled-prover"] }
++zcash_protocol = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0", features = ["local-consensus"] }
++zcash_script = "0.6"
++zip32 = "0.3"
++zip321 = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
+ 
+ # CLI
+ clap = { version = "4.5", features = ["derive", "string", "unstable-styles"] }
+ 
+ # CSPRNG
+-rand = { version = "0.8", default-features = false }
++rand = { version = "0.10", features = ["std", "std_rng", "sys_rng", "thread_rng"] }
+ 
+ # Seed encryption
+ age = { version = "0.12", features = ["armor", "plugin"] }
+@@ -73,25 +73,26 @@ rpassword = "7"
+ 
+ # Currency conversion
+ iso_currency = { version = "0.5", features = ["with-serde"] }
+-rust_decimal = "1"
++rust_decimal = "1.35"
+ 
+ # Inspect
+ bech32 = "0.11"
+-bellman = "0.14"
++bellman = "0.15"
++groth16 = "0.2"
+ blake2b_simd = "1"
+ bs58 = "0.5"
+ ed25519-zebra = "4"
+-equihash = "0.2"
+-group = "0.13"
++equihash = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
++group = "0.14"
+ lazy_static = "1"
+ phf = { version = "0.11", features = ["macros"] }
+-regex = "1"
++regex = "1.11"
+ serde_json = "1"
+ sha2 = "0.10"
+ sha3 = "0.10"
+ uint = "0.10"
+-zcash_encoding = "0.4"
+-zcash_note_encryption = "0.4.1"
++zcash_encoding = { git = "https://github.com/zcash/librustzcash.git", rev = "9c5705f56517c040c50f96d29f1ff15a9383f3e0" }
++zcash_note_encryption = "0.5.1"
+ 
+ # PCZT QR codes
+ image = { version = "0.25", optional = true }
+@@ -102,8 +103,8 @@ rqrr = { version = "0.10.1", optional = true }
+ ur = { version = "0.5", optional = true }
+ 
+ # Tree exploration
+-incrementalmerkletree = "0.8"
+-shardtree = "0.7"
++incrementalmerkletree = "0.9"
++shardtree = "0.8"
+ 
+ # TUI
+ crossterm = { version = "0.29", optional = true, features = ["event-stream"] }
+diff --git a/src/commands/inspect.rs b/src/commands/inspect.rs
+index 6e5cc50..18fbff8 100644
+--- a/src/commands/inspect.rs
++++ b/src/commands/inspect.rs
+@@ -73,9 +73,9 @@ impl Command {
+             address::inspect(addr);
+         } else if let Some(addr) = foreign_address::detect(&opts.data) {
+             foreign_address::inspect(addr);
+-        } else if let Ok((network, uivk)) = unified::Uivk::decode(&opts.data) {
++        } else if let Ok((network, _revision, uivk)) = unified::Uivk::decode(&opts.data) {
+             keys::view::inspect_uivk(uivk, network);
+-        } else if let Ok((network, ufvk)) = unified::Ufvk::decode(&opts.data) {
++        } else if let Ok((network, _revision, ufvk)) = unified::Ufvk::decode(&opts.data) {
+             keys::view::inspect_ufvk(ufvk, network);
+         } else if let Ok(parsed) = CheckedHrpstring::new::<Bech32>(&opts.data) {
+             let data = parsed.byte_iter().collect::<Vec<_>>();
+diff --git a/src/commands/inspect/address.rs b/src/commands/inspect/address.rs
+index 2e21091..73ff0b5 100644
+--- a/src/commands/inspect/address.rs
++++ b/src/commands/inspect/address.rs
+@@ -121,9 +121,7 @@ pub(crate) fn inspect(addr: ZcashAddress) {
+                             unified::Receiver::Orchard(data) => {
+                                 eprintln!(
+                                     "   - Orchard ({})",
+-                                    unified::Address::try_from_items(vec![
+-                                        unified::Receiver::Orchard(data)
+-                                    ])
++                                    unified::Address::try_from_items(unified::Revision::R0, vec![unified::Uitem::Data(unified::Receiver::Orchard(data))])
+                                     .unwrap()
+                                     .encode(&addr.net)
+                                 );
+diff --git a/src/commands/inspect/keys.rs b/src/commands/inspect/keys.rs
+index 6a2f57d..784bf4a 100644
+--- a/src/commands/inspect/keys.rs
++++ b/src/commands/inspect/keys.rs
+@@ -49,7 +49,7 @@ pub(crate) fn inspect_mnemonic(mnemonic: bip0039::Mnemonic, context: Option<Cont
+             };
+ 
+             eprintln!("   - Sapling:");
+-            let sapling_master = sapling::zip32::ExtendedSpendingKey::master(&seed);
++            let sapling_master = sapling::zip32::ExtendedSpendingKey::master(&seed).expect("valid seed");
+             let sapling_extsk = sapling::zip32::ExtendedSpendingKey::from_path(
+                 &sapling_master,
+                 &[
+@@ -57,7 +57,8 @@ pub(crate) fn inspect_mnemonic(mnemonic: bip0039::Mnemonic, context: Option<Cont
+                     zip32::ChildIndex::hardened(network.coin_type()),
+                     account.into(),
+                 ],
+-            );
++            )
++            .expect("valid ZIP 32 path");
+             #[allow(deprecated)]
+             let sapling_extfvk = sapling_extsk.to_extended_full_viewing_key();
+             let sapling_default_addr = sapling_extfvk.default_address();
+@@ -145,12 +146,13 @@ pub(crate) fn inspect_mnemonic(mnemonic: bip0039::Mnemonic, context: Option<Cont
+                     unified::Fvk::Orchard(_) => "Orchard",
+                     unified::Fvk::Sapling(_) => "Sapling",
+                     unified::Fvk::P2pkh(_) => "Transparent",
++                    unified::Fvk::P2sh(_) => "Transparent (P2SH)",
+                     unified::Fvk::Unknown { .. } => unreachable!(),
+                 })
+                 .collect();
+ 
+             eprintln!("   - Unified ({}):", item_names.join(", "));
+-            let ufvk = unified::Ufvk::try_from_items(items).unwrap();
++            let ufvk = unified::Ufvk::try_from_items(unified::Revision::R0, items.into_iter().map(unified::Uitem::Data).collect()).unwrap();
+             eprintln!("     - UFVK: {}", ufvk.encode(&addr_net));
+         }
+         seed.zeroize();
+@@ -202,7 +204,6 @@ pub(crate) fn inspect_sapling_extsk(data: Vec<u8>, network: NetworkType) {
+                         nu6_1: None,
+                         nu6_2: None,
+                         nu6_3: None,
+-                        #[cfg(zcash_unstable = "nu7")]
+                         nu7: None,
+                     }),
+                 };
+@@ -225,7 +226,6 @@ pub(crate) fn inspect_sapling_extsk(data: Vec<u8>, network: NetworkType) {
+                         nu6_1: None,
+                         nu6_2: None,
+                         nu6_3: None,
+-                        #[cfg(zcash_unstable = "nu7")]
+                         nu7: None,
+                     }),
+                 };
+@@ -244,14 +244,14 @@ pub(crate) fn inspect_transparent_sk(data: &[u8], network: NetworkType) {
+         _ => (data, false),
+     };
+ 
+-    match secp256k1::SecretKey::from_slice(data) {
++    match <[u8; 32]>::try_from(data).map_err(|_| ()).and_then(|b| secp256k1::SecretKey::from_secret_bytes(b).map_err(|_| ())) {
+         Err(_) => {
+             eprintln!("Invalid encoding that claims to be a transparent secret key");
+         }
+         Ok(sk) => {
+             eprintln!("Transparent secret key");
+ 
+-            let pubkey = sk.public_key(&secp256k1::Secp256k1::signing_only());
++            let pubkey = sk.public_key();
+             eprintln!(
+                 "- Public key: {}",
+                 if compressed {
+diff --git a/src/commands/inspect/keys/view.rs b/src/commands/inspect/keys/view.rs
+index b545f24..8965485 100644
+--- a/src/commands/inspect/keys/view.rs
++++ b/src/commands/inspect/keys/view.rs
+@@ -22,7 +22,7 @@ pub(crate) fn inspect_ufvk(ufvk: unified::Ufvk, network: NetworkType) {
+             unified::Fvk::Orchard(data) => {
+                 eprintln!(
+                     "   - Orchard ({})",
+-                    unified::Ufvk::try_from_items(vec![unified::Fvk::Orchard(data)])
++                    unified::Ufvk::try_from_items(unified::Revision::R0, vec![unified::Uitem::Data(unified::Fvk::Orchard(data))])
+                         .unwrap()
+                         .encode(&network)
+                 );
+@@ -41,6 +41,10 @@ pub(crate) fn inspect_ufvk(ufvk: unified::Ufvk, network: NetworkType) {
+                 eprintln!("   - Transparent P2PKH");
+                 eprintln!("     - Payload: {}", hex::encode(data));
+             }
++            unified::Fvk::P2sh(data) => {
++                eprintln!("   - Transparent P2SH");
++                eprintln!("     - Payload: {}", hex::encode(data));
++            }
+             unified::Fvk::Unknown { typecode, data } => {
+                 eprintln!("   - Unknown");
+                 eprintln!("     - Typecode: {typecode}");
+@@ -66,7 +70,7 @@ pub(crate) fn inspect_uivk(uivk: unified::Uivk, network: NetworkType) {
+             unified::Ivk::Orchard(data) => {
+                 eprintln!(
+                     "   - Orchard ({})",
+-                    unified::Uivk::try_from_items(vec![unified::Ivk::Orchard(data)])
++                    unified::Uivk::try_from_items(unified::Revision::R0, vec![unified::Uitem::Data(unified::Ivk::Orchard(data))])
+                         .unwrap()
+                         .encode(&network)
+                 );
+@@ -79,6 +83,10 @@ pub(crate) fn inspect_uivk(uivk: unified::Uivk, network: NetworkType) {
+                 eprintln!("   - Transparent P2PKH");
+                 eprintln!("     - Payload: {}", hex::encode(data));
+             }
++            unified::Ivk::P2sh(data) => {
++                eprintln!("   - Transparent P2SH");
++                eprintln!("     - Payload: {}", hex::encode(data));
++            }
+             unified::Ivk::Unknown { typecode, data } => {
+                 eprintln!("   - Unknown");
+                 eprintln!("     - Typecode: {typecode}");
+@@ -122,7 +130,6 @@ pub(crate) fn inspect_sapling_extfvk(data: Vec<u8>, network: NetworkType) {
+                         nu6_1: None,
+                         nu6_2: None,
+                         nu6_3: None,
+-                        #[cfg(zcash_unstable = "nu7")]
+                         nu7: None,
+                     }),
+                 };
+@@ -145,7 +152,6 @@ pub(crate) fn inspect_sapling_extfvk(data: Vec<u8>, network: NetworkType) {
+                         nu6_1: None,
+                         nu6_2: None,
+                         nu6_3: None,
+-                        #[cfg(zcash_unstable = "nu7")]
+                         nu7: None,
+                     }),
+                 };
+diff --git a/src/commands/inspect/transaction.rs b/src/commands/inspect/transaction.rs
+index 34a22f7..60a6cab 100644
+--- a/src/commands/inspect/transaction.rs
++++ b/src/commands/inspect/transaction.rs
+@@ -3,7 +3,6 @@ use std::{
+     convert::{TryFrom, TryInto},
+ };
+ 
+-use bellman::groth16;
+ use group::GroupEncoding;
+ use sapling::{SaplingVerificationContext, note_encryption::SaplingDomain};
+ use secp256k1::{Secp256k1, VerifyOnly};
+@@ -287,7 +286,7 @@ pub(crate) fn inspect(
+                                         secp256k1::Message::from_digest_slice(sighash.as_ref())
+                                             .expect("signature_hash() returns correct length");
+ 
+-                                    if let Err(e) = ctx.verify_ecdsa(&msg, &sig, &pubkey) {
++                                    if let Err(e) = ctx.verify_ecdsa(msg, &sig, &pubkey) {
+                                         eprintln!("    ⚠️  Spend {i} is invalid: {e}");
+                                         eprintln!(
+                                             "     - sighash is {}",
+@@ -506,9 +505,7 @@ pub(crate) fn inspect(
+                             // Construct a single-receiver UA.
+                             let zaddr = ZcashAddress::from_unified(
+                                 net,
+-                                unified::Address::try_from_items(vec![unified::Receiver::Orchard(
+-                                    addr.to_raw_address_bytes(),
+-                                )])
++                                unified::Address::try_from_items(unified::Revision::R0, vec![unified::Uitem::Data(unified::Receiver::Orchard(addr.to_raw_address_bytes()))])
+                                 .unwrap(),
+                             );
+                             eprintln!("     - {zaddr}");
+diff --git a/src/commands/keystone.rs b/src/commands/keystone.rs
+index 4e0fccf..6012492 100644
+--- a/src/commands/keystone.rs
++++ b/src/commands/keystone.rs
+@@ -4,7 +4,7 @@ use anyhow::anyhow;
+ use clap::{Args, Subcommand};
+ use minicbor::data::{Int, Tag};
+ use qrcode::{QrCode, render::unicode};
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::io::{AsyncWriteExt, stdout};
+ use uuid::Uuid;
+ use zcash_client_backend::data_api::Account;
+@@ -45,7 +45,7 @@ impl Enroll {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         let key_derivation = account
+diff --git a/src/commands/migration/advance.rs b/src/commands/migration/advance.rs
+index 8b99207..1e577c5 100644
+--- a/src/commands/migration/advance.rs
++++ b/src/commands/migration/advance.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ 
+ use zcash_client_backend::data_api::{Account as _, WalletRead};
+@@ -42,7 +42,7 @@ impl Command {
+         // dueness is judged against, read through a `WalletDb` view that is dropped before the
+         // migration store borrows the same connection.
+         let (account_id, fvk, scanned, tip) = {
+-            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+             let account = select_account(&wallet_db, self.account_id)?;
+             let fvk = account
+                 .ufvk()
+@@ -68,7 +68,7 @@ impl Command {
+         // transaction could be mined in.
+         let targets = DuenessTargets::new(scanned + 1, tip + 1);
+ 
+-        let mut rng = OsRng;
++        let mut rng = UnwrapErr(SysRng);
+         let config = AdvanceConfig::new(REORG_SETTLE_DEPTH);
+ 
+         // `advance_migration` plans the next step, verifies it against the store's satisfiability
+@@ -95,9 +95,9 @@ impl Command {
+                     let id = target.id();
+                     let outcome = {
+                         let mut wallet_db =
+-                            WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++                            WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+                         let mut prover =
+-                            WalletMigrationProver::new(&mut wallet_db, account_id, fvk.clone());
++                            WalletMigrationProver::new(&mut wallet_db, UnwrapErr(SysRng), account_id, fvk.clone());
+                         match target.kind() {
+                             MigrationTxKind::Transfer { .. } => prove_transfer(
+                                 &params,
+diff --git a/src/commands/migration/commit.rs b/src/commands/migration/commit.rs
+index 38d0bab..4f83c71 100644
+--- a/src/commands/migration/commit.rs
++++ b/src/commands/migration/commit.rs
+@@ -2,7 +2,7 @@ use std::fs;
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use secrecy::ExposeSecret;
+ use uuid::Uuid;
+ 
+@@ -61,7 +61,7 @@ impl Command {
+         // view that is dropped before the migration store borrows the same connection.
+         // `PoolMigrations` is account-scoped, so the account must be resolved before loading.
+         let (account_id, ufvk, account_index) = {
+-            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+             let account = select_account(&wallet_db, self.account_id)?;
+             // Only the in-process signing path needs a derivation path; an account whose spend
+             // authority lives on a device may legitimately have none.
+@@ -124,9 +124,9 @@ impl Command {
+             None
+         };
+ 
+-        let mut rng = OsRng;
++        let mut rng = UnwrapErr(SysRng);
+         let (state, unsigned) = {
+-            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+ 
+             let target_height = wallet_db
+                 .chain_height()
+diff --git a/src/commands/migration/plan.rs b/src/commands/migration/plan.rs
+index ae1f419..117b3d6 100644
+--- a/src/commands/migration/plan.rs
++++ b/src/commands/migration/plan.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ 
+ use zcash_client_backend::data_api::{
+@@ -86,14 +86,14 @@ impl Command {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+         let (_, db_path) = get_db_paths(wallet_dir.as_ref());
+         let mut conn = open_connection(&db_path)?;
+-        let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++        let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+         let account = select_account(&wallet_db, self.account_id)?;
+         let backend = PlanBackend {
+             wallet: &wallet_db,
+             account: account.id(),
+         };
+ 
+-        let mut rng = OsRng;
++        let mut rng = UnwrapErr(SysRng);
+         let plan = plan_migration(&params, &backend, &mut rng).map_err(|e| anyhow!("{e}"))?;
+ 
+         println!("Note split:");
+diff --git a/src/commands/migration/status.rs b/src/commands/migration/status.rs
+index 196d2bc..eaf5ce0 100644
+--- a/src/commands/migration/status.rs
++++ b/src/commands/migration/status.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ 
+ use zcash_client_backend::data_api::{Account as _, WalletRead};
+@@ -35,7 +35,7 @@ impl Command {
+         // schedule's own maximum, say) would make transactions look ready regardless of the real
+         // chain. Matches `migration advance`.
+         let (account_id, scanned, tip) = {
+-            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, OsRng);
++            let wallet_db = WalletDb::from_connection(&mut conn, params, SystemClock, UnwrapErr(SysRng));
+             let account = select_account(&wallet_db, self.account_id)?;
+             let scanned = wallet_db
+                 .block_fully_scanned()
+diff --git a/src/commands/pczt/create.rs b/src/commands/pczt/create.rs
+index 3eaedb1..2679a32 100644
+--- a/src/commands/pczt/create.rs
++++ b/src/commands/pczt/create.rs
+@@ -3,7 +3,7 @@ use std::{num::NonZeroUsize, path::PathBuf, str::FromStr};
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncWriteExt, stdout},
+@@ -72,7 +72,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         // Create the PCZT.
+@@ -125,6 +125,8 @@ impl Command {
+         let pczt = create_pczt_from_proposal(
+             &mut db_data,
+             &params,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             account.id(),
+             OvkPolicy::Sender,
+             &proposal,
+diff --git a/src/commands/pczt/create_manual.rs b/src/commands/pczt/create_manual.rs
+index 22214b3..f95d67e 100644
+--- a/src/commands/pczt/create_manual.rs
++++ b/src/commands/pczt/create_manual.rs
+@@ -4,7 +4,7 @@ use std::{path::PathBuf, str::FromStr};
+ use anyhow::anyhow;
+ use clap::Args;
+ use pczt::roles::{creator::Creator, io_finalizer::IoFinalizer, updater::Updater};
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncWriteExt, stdout},
+@@ -84,7 +84,7 @@ impl Command {
+             let config = WalletConfig::read(wallet_dir.as_ref())?;
+             config.network()
+         };
+-        let rng = OsRng;
++        let rng = UnwrapErr(SysRng);
+ 
+         let coins = parse_coins(&self.coins)?;
+         let recipient = ZcashAddress::from_str(&self.address)
+@@ -208,7 +208,7 @@ impl Command {
+             .ok_or_else(|| anyhow!("Transaction version is incompatible with PCZTs"))?;
+ 
+         let io_finalized = IoFinalizer::new(created)
+-            .finalize_io()
++            .finalize_io(UnwrapErr(SysRng))
+             .map_err(|e| anyhow!("{e:?}"))?;
+ 
+         // Add the recipient address metadata to the generated output to permit
+diff --git a/src/commands/pczt/create_max.rs b/src/commands/pczt/create_max.rs
+index fb53b39..12c94e1 100644
+--- a/src/commands/pczt/create_max.rs
++++ b/src/commands/pczt/create_max.rs
+@@ -2,7 +2,7 @@ use std::{path::PathBuf, str::FromStr};
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncWriteExt, stdout},
+@@ -63,7 +63,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         let recipient =
+@@ -102,6 +102,8 @@ impl Command {
+         let pczt = create_pczt_from_proposal(
+             &mut db_data,
+             &params,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             account.id(),
+             OvkPolicy::Sender,
+             &proposal,
+diff --git a/src/commands/pczt/extract.rs b/src/commands/pczt/extract.rs
+index b92f785..0ac47d5 100644
+--- a/src/commands/pczt/extract.rs
++++ b/src/commands/pczt/extract.rs
+@@ -1,3 +1,4 @@
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use anyhow::anyhow;
+ use clap::Args;
+ use pczt::{
+@@ -27,7 +28,7 @@ impl Command {
+ 
+         let tx = TransactionExtractor::new(finalized)
+             .with_sapling(&spend_vk, &output_vk)
+-            .extract()
++            .extract(UnwrapErr(SysRng))
+             .map_err(|e| anyhow!("Failed to extract transaction from PCZT: {e:?}"))?;
+         let txid = tx.txid();
+         println!("{txid}");
+diff --git a/src/commands/pczt/pay_manual.rs b/src/commands/pczt/pay_manual.rs
+index 9d9c0ec..ffe06a2 100644
+--- a/src/commands/pczt/pay_manual.rs
++++ b/src/commands/pczt/pay_manual.rs
+@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, convert::Infallible, path::PathBuf};
+ use anyhow::anyhow;
+ use clap::Args;
+ use pczt::roles::{creator::Creator, io_finalizer::IoFinalizer, updater::Updater};
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncWriteExt, stdout},
+@@ -85,7 +85,7 @@ impl Command {
+             let config = WalletConfig::read(wallet_dir.as_ref())?;
+             config.network()
+         };
+-        let rng = OsRng;
++        let rng = UnwrapErr(SysRng);
+ 
+         let coins = parse_coins(&self.coins)?;
+ 
+@@ -308,7 +308,7 @@ impl Command {
+             .ok_or_else(|| anyhow!("Transaction version is incompatible with PCZTs"))?;
+ 
+         let io_finalized = IoFinalizer::new(created)
+-            .finalize_io()
++            .finalize_io(UnwrapErr(SysRng))
+             .map_err(|e| anyhow!("{e:?}"))?;
+ 
+         let set_verification_address =
+diff --git a/src/commands/pczt/prove.rs b/src/commands/pczt/prove.rs
+index 590f386..e087df8 100644
+--- a/src/commands/pczt/prove.rs
++++ b/src/commands/pczt/prove.rs
+@@ -2,6 +2,7 @@ use std::path::PathBuf;
+ 
+ use anyhow::anyhow;
+ use clap::Args;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use pczt::{
+     Pczt,
+     roles::{prover::Prover, updater::Updater},
+@@ -95,7 +96,7 @@ impl Command {
+                                         account_index,
+                                     )?;
+ 
+-                                    Ok(usk.sapling().expsk.proof_generation_key())
++                                    Ok(usk.sapling().expsk().proof_generation_key())
+                                 } else {
+                                     Err(anyhow!(
+                                         "Invalid ZIP 32 derivation path for PCZT Sapling spend"
+@@ -114,17 +115,18 @@ impl Command {
+             let pkg_source = match (self.sapling_proof_generation_key, self.identity) {
+                 (Some(proof_generation_key), _) => {
+                     if proof_generation_key.len() == 64 {
+-                        Ok(PgkSource::Provided(sapling::keys::ProofGenerationKey {
+-                            ak: sapling::keys::SpendValidatingKey::temporary_zcash_from_bytes(
+-                                &proof_generation_key[..32],
+-                            )
+-                            .ok_or_else(|| anyhow!("Invalid Sapling proof generation key"))?,
+-                            nsk: jubjub::Scalar::from_bytes(
+-                                &proof_generation_key[32..].try_into().unwrap(),
+-                            )
+-                            .into_option()
+-                            .ok_or_else(|| anyhow!("Invalid Sapling proof generation key"))?,
+-                        }))
++                        let ak = sapling::keys::SpendValidatingKey::temporary_zcash_from_bytes(
++                            &proof_generation_key[..32],
++                        )
++                        .ok_or_else(|| anyhow!("Invalid Sapling proof generation key"))?;
++                        let nsk = jubjub::Scalar::from_bytes(
++                            &proof_generation_key[32..].try_into().unwrap(),
++                        )
++                        .into_option()
++                        .ok_or_else(|| anyhow!("Invalid Sapling proof generation key"))?;
++                        sapling::keys::ProofGenerationKey::from_parts(ak, nsk)
++                            .map(PgkSource::Provided)
++                            .ok_or_else(|| anyhow!("Invalid Sapling proof generation key"))
+                     } else {
+                         Err(anyhow!("Invalid Sapling proof generation key"))
+                     }
+@@ -202,30 +204,40 @@ impl Command {
+         if needs_orchard || needs_ironwood {
+             let branch_id = zcash_protocol::consensus::BranchId::try_from(raw_branch_id)
+                 .map_err(|_| anyhow!("PCZT has an unknown consensus branch ID"))?;
+-            let pk = orchard::circuit::ProvingKey::build(
++            let circuit_for = |pool| {
+                 zcash_primitives::transaction::components::orchard::bundle_version_for_branch(
+-                    branch_id,
+-                    orchard::ValuePool::Orchard,
++                    branch_id, pool,
+                 )
++                .map(|v| v.circuit_version())
++            };
++            let orchard_circuit = circuit_for(orchard::ValuePool::Orchard);
++            let ironwood_circuit = circuit_for(orchard::ValuePool::Ironwood);
++            // One proving key serves both bundles only while they share a circuit.
++            // Fail loudly if a future upgrade splits them rather than emit bad proofs.
++            if needs_orchard && needs_ironwood && orchard_circuit != ironwood_circuit {
++                return Err(anyhow!(
++                    "Orchard and Ironwood use different circuits on {branch_id:?}"
++                ));
++            }
++            let circuit = if needs_ironwood { ironwood_circuit } else { orchard_circuit }
+                 .ok_or_else(|| {
+-                    anyhow!("PCZT's consensus branch {branch_id:?} does not support Orchard")
+-                })?
+-                .circuit_version(),
+-            );
++                    anyhow!("PCZT's consensus branch {branch_id:?} does not support this pool")
++                })?;
++            let pk = orchard::circuit::ProvingKey::build(circuit);
+             if needs_orchard {
+                 prover_role = prover_role
+-                    .create_orchard_proof(&pk)
++                    .create_orchard_proof(UnwrapErr(SysRng), &pk)
+                     .map_err(|e| anyhow!("Failed to create Orchard proof: {:?}", e))?;
+             }
+             if needs_ironwood {
+                 prover_role = prover_role
+-                    .create_ironwood_proof(&pk)
++                    .create_ironwood_proof(UnwrapErr(SysRng), &pk)
+                     .map_err(|e| anyhow!("Failed to create Ironwood proof: {:?}", e))?;
+             }
+         }
+ 
+         let pczt = prover_role
+-            .create_sapling_proofs(&prover, &prover)
++            .create_sapling_proofs(UnwrapErr(SysRng), &prover, &prover)
+             .map_err(|e| anyhow!("Failed to create Sapling proofs: {:?}", e))?
+             .finish();
+ 
+diff --git a/src/commands/pczt/qr.rs b/src/commands/pczt/qr.rs
+index d439d71..091327d 100644
+--- a/src/commands/pczt/qr.rs
++++ b/src/commands/pczt/qr.rs
+@@ -15,7 +15,7 @@ use pczt::roles::signer::Signer;
+ use pczt::roles::signer::batch::{BatchSignRequest, BatchSignResponse};
+ use qrcode::{QrCode, render::unicode};
+ use rand::RngCore;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncReadExt, AsyncWriteExt, Stdout, stdin, stdout},
+@@ -251,7 +251,7 @@ fn build_batch_request_packet(pczts: Vec<Pczt>) -> anyhow::Result<(Vec<u8>, [u8;
+         .map_err(|e| anyhow!("Failed to serialize batch: {:?}", e))?;
+ 
+     let mut request_id = [0u8; 16];
+-    OsRng.fill_bytes(&mut request_id);
++    UnwrapErr(SysRng).fill_bytes(&mut request_id);
+ 
+     let mut batch_packet = vec![];
+     minicbor::encode(
+diff --git a/src/commands/pczt/send.rs b/src/commands/pczt/send.rs
+index a75ae30..a54f3a2 100644
+--- a/src/commands/pczt/send.rs
++++ b/src/commands/pczt/send.rs
+@@ -3,7 +3,7 @@ use std::path::PathBuf;
+ use anyhow::anyhow;
+ use clap::Args;
+ use pczt::Pczt;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncReadExt, stdin},
+@@ -33,7 +33,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         let mut client = self.connection.connect(params, wallet_dir.as_ref()).await?;
+ 
+@@ -51,6 +51,8 @@ impl Command {
+ 
+         let txid = extract_and_store_transaction_from_pczt::<_, ()>(
+             &mut db_data,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             pczt,
+             Some((&spend_vk, &output_vk)),
+             // Passing `None` makes the extractor build an Orchard verifying
+diff --git a/src/commands/pczt/send_without_storing.rs b/src/commands/pczt/send_without_storing.rs
+index b98f870..54913ec 100644
+--- a/src/commands/pczt/send_without_storing.rs
++++ b/src/commands/pczt/send_without_storing.rs
+@@ -1,3 +1,4 @@
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use std::path::PathBuf;
+ 
+ use anyhow::anyhow;
+@@ -50,7 +51,7 @@ impl Command {
+ 
+         let tx = TransactionExtractor::new(finalized)
+             .with_sapling(&spend_vk, &output_vk)
+-            .extract()
++            .extract(UnwrapErr(SysRng))
+             .map_err(|e| anyhow!("Failed to extract transaction from PCZT: {e:?}"))?;
+         let txid = tx.txid();
+ 
+diff --git a/src/commands/pczt/shield.rs b/src/commands/pczt/shield.rs
+index 928e134..5016d09 100644
+--- a/src/commands/pczt/shield.rs
++++ b/src/commands/pczt/shield.rs
+@@ -4,7 +4,7 @@ use std::path::PathBuf;
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{
+     fs::File,
+     io::{AsyncWriteExt, stdout},
+@@ -59,7 +59,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         let addresses = self
+@@ -113,6 +113,8 @@ impl Command {
+         let pczt = create_pczt_from_proposal(
+             &mut db_data,
+             &params,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             account.id(),
+             OvkPolicy::Sender,
+             &proposal,
+diff --git a/src/commands/pczt/sign.rs b/src/commands/pczt/sign.rs
+index 97ac505..d7ad91e 100644
+--- a/src/commands/pczt/sign.rs
++++ b/src/commands/pczt/sign.rs
+@@ -1,3 +1,4 @@
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use std::{collections::BTreeMap, convert::Infallible, path::PathBuf};
+ 
+ use anyhow::anyhow;
+@@ -166,6 +167,7 @@ impl Command {
+                     KeyRef::Orchard { index } => {
+                         signer
+                             .sign_orchard(
++                                UnwrapErr(SysRng),
+                                 index,
+                                 &orchard::keys::SpendAuthorizingKey::from(usk.orchard()),
+                             )
+@@ -175,7 +177,7 @@ impl Command {
+                     }
+                     KeyRef::Sapling { index } => {
+                         signer
+-                            .sign_sapling(index, &usk.sapling().expsk.ask)
++                            .sign_sapling(UnwrapErr(SysRng), index, usk.sapling().expsk().ask())
+                             .map_err(|e| {
+                                 anyhow!("Failed to sign Sapling spend {index}: {:?}", e)
+                             })?;
+diff --git a/src/commands/pczt/update_with_signature.rs b/src/commands/pczt/update_with_signature.rs
+index cb23464..ee082e9 100644
+--- a/src/commands/pczt/update_with_signature.rs
++++ b/src/commands/pczt/update_with_signature.rs
+@@ -108,7 +108,6 @@ fn add_transparent(
+                             .unwrap()
+                     },
+                     sig,
+-                    &secp256k1::Secp256k1::verification_only(),
+                 )?;
+             }
+             Ok::<_, TempError>(())
+diff --git a/src/commands/wallet/balance.rs b/src/commands/wallet/balance.rs
+index 285bc74..3213a2a 100644
+--- a/src/commands/wallet/balance.rs
++++ b/src/commands/wallet/balance.rs
+@@ -1,3 +1,4 @@
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use anyhow::anyhow;
+ use clap::Args;
+ use iso_currency::Currency;
+@@ -158,7 +159,7 @@ impl ValuePrinter {
+     async fn with_exchange_rate(tor: &tor::Client, currency: Currency) -> anyhow::Result<Self> {
+         info!("Fetching {:?}/ZEC exchange rate", currency);
+         let exchanges = tor::http::cryptex::Exchanges::unauthenticated_known_with_gemini_trusted();
+-        let usd_zec = tor.get_latest_zec_to_usd_rate(&exchanges).await?;
++        let usd_zec = tor.get_latest_zec_to_usd_rate(&mut UnwrapErr(SysRng), &exchanges).await?;
+ 
+         if currency == Currency::USD {
+             let rate = usd_zec;
+diff --git a/src/commands/wallet/delete_account.rs b/src/commands/wallet/delete_account.rs
+index 47b19d6..53ae2c1 100644
+--- a/src/commands/wallet/delete_account.rs
++++ b/src/commands/wallet/delete_account.rs
+@@ -1,5 +1,5 @@
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ use zcash_client_backend::data_api::{Account as _, WalletWrite};
+ use zcash_client_sqlite::{WalletDb, util::SystemClock};
+@@ -18,7 +18,7 @@ impl Command {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         db_data.delete_account(account.id())?;
+diff --git a/src/commands/wallet/derive_path.rs b/src/commands/wallet/derive_path.rs
+index 3679991..9c0021b 100644
+--- a/src/commands/wallet/derive_path.rs
++++ b/src/commands/wallet/derive_path.rs
+@@ -190,9 +190,10 @@ impl Command {
+                                             sapling::zip32::ExtendedSpendingKey::master(
+                                                 seed.expose_secret(),
+                                             )
+-                                            .derive_child(zip32::ChildIndex::hardened(32))
+-                                            .derive_child(zip32::ChildIndex::hardened(*coin_type))
+-                                            .derive_child(zip32::ChildIndex::hardened(*account))
++                                            .and_then(|k| k.derive_child(zip32::ChildIndex::hardened(32)))
++                                            .and_then(|k| k.derive_child(zip32::ChildIndex::hardened(*coin_type)))
++                                            .and_then(|k| k.derive_child(zip32::ChildIndex::hardened(*account)))
++                                            .expect("valid ZIP 32 derivation")
+                                             .to_extended_full_viewing_key()
+                                         })
+                                     }
+diff --git a/src/commands/wallet/enhance.rs b/src/commands/wallet/enhance.rs
+index d1ab0ee..137443a 100644
+--- a/src/commands/wallet/enhance.rs
++++ b/src/commands/wallet/enhance.rs
+@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
+ use anyhow::anyhow;
+ use clap::Args;
+ use futures_util::StreamExt;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tonic::{Code, transport::Channel};
+ use tracing::info;
+ use zcash_client_backend::{
+@@ -78,7 +78,7 @@ impl Command {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+ 
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let chain_tip = db_data.chain_height()?.ok_or_else(|| {
+             anyhow!("Chain height must be available to perform transaction enhancement.")
+         })?;
+diff --git a/src/commands/wallet/fan_out.rs b/src/commands/wallet/fan_out.rs
+index 0078cd9..33aa338 100644
+--- a/src/commands/wallet/fan_out.rs
++++ b/src/commands/wallet/fan_out.rs
+@@ -3,7 +3,7 @@ use std::str::FromStr;
+ use age::Identity;
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ 
+ use zcash_address::ZcashAddress;
+@@ -104,7 +104,7 @@ impl Command {
+         // self-payment here just avoids needing a real second party.
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+         let (ua, _) = account
+             .uivk()
+diff --git a/src/commands/wallet/gen_account.rs b/src/commands/wallet/gen_account.rs
+index 8640d09..3f39516 100644
+--- a/src/commands/wallet/gen_account.rs
++++ b/src/commands/wallet/gen_account.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use zcash_client_backend::{data_api::WalletWrite, proto::service};
+ use zcash_client_sqlite::{WalletDb, util::SystemClock};
+ 
+@@ -27,7 +27,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         // Decrypt the mnemonic to access the seed.
+         let identities = age::IdentityFile::from_file(self.identity)?.into_identities()?;
+diff --git a/src/commands/wallet/gen_addr.rs b/src/commands/wallet/gen_addr.rs
+index 7677f75..2d9dc31 100644
+--- a/src/commands/wallet/gen_addr.rs
++++ b/src/commands/wallet/gen_addr.rs
+@@ -1,5 +1,5 @@
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ use zcash_client_backend::data_api::{Account, WalletWrite};
+ use zcash_client_sqlite::{WalletDb, util::SystemClock};
+@@ -30,7 +30,7 @@ impl Command {
+     pub(crate) fn run(self, wallet_dir: Option<String>) -> anyhow::Result<()> {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         let account = select_account(&db_data, self.account_id)?;
+ 
+diff --git a/src/commands/wallet/import_ufvk.rs b/src/commands/wallet/import_ufvk.rs
+index 36518c8..50cd107 100644
+--- a/src/commands/wallet/import_ufvk.rs
++++ b/src/commands/wallet/import_ufvk.rs
+@@ -1,7 +1,7 @@
+ use anyhow::anyhow;
+ use clap::Args;
+ 
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use zcash_address::unified::{self, Encoding};
+ use zcash_client_backend::{
+     data_api::{AccountBirthday, AccountPurpose, WalletWrite, Zip32Derivation},
+@@ -46,7 +46,7 @@ pub(crate) struct Command {
+ 
+ impl Command {
+     pub(crate) async fn run(self, wallet_dir: Option<String>) -> Result<(), anyhow::Error> {
+-        let (network, ufvk) = unified::Ufvk::decode(&self.ufvk)?;
++        let (network, _revision, ufvk) = unified::Ufvk::decode(&self.ufvk)?;
+         let ufvk = UnifiedFullViewingKey::parse(&ufvk).map_err(|e| anyhow!("{e}"))?;
+ 
+         let params = match network {
+@@ -63,7 +63,7 @@ impl Command {
+         };
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         // Construct an `AccountBirthday` for the account's birthday.
+         let birthday = {
+diff --git a/src/commands/wallet/init_fvk.rs b/src/commands/wallet/init_fvk.rs
+index 4b3a55e..3b48ef6 100644
+--- a/src/commands/wallet/init_fvk.rs
++++ b/src/commands/wallet/init_fvk.rs
+@@ -52,7 +52,7 @@ impl Command {
+         let (network_type, ufvk) = Ufvk::decode(&opts.fvk)
+             .map_err(anyhow::Error::new)
+             .and_then(
+-                |(network, ufvk)| -> Result<(NetworkType, UnifiedFullViewingKey), anyhow::Error> {
++                |(network, _revision, ufvk)| -> Result<(NetworkType, UnifiedFullViewingKey), anyhow::Error> {
+                     let ufvk = UnifiedFullViewingKey::parse(&ufvk)?;
+                     Ok((network, ufvk))
+                 },
+diff --git a/src/commands/wallet/list_addresses.rs b/src/commands/wallet/list_addresses.rs
+index b60c4e9..3f6a15f 100644
+--- a/src/commands/wallet/list_addresses.rs
++++ b/src/commands/wallet/list_addresses.rs
+@@ -106,7 +106,7 @@ impl Command {
+                         .ok_or_else(|| anyhow!("Account address has no orchard receiver"))?;
+                     // Orchard receivers have no bare encoding; emit a unified
+                     // address carrying only the Orchard receiver.
+-                    let orchard_only = UnifiedAddress::from_receivers(Some(*addr), None, None)
++                    let orchard_only = UnifiedAddress::from_receivers(Some(*addr), None, None, None, None)
+                         .ok_or_else(|| anyhow!("Failed to encode orchard-only unified address"))?;
+                     println!("Receiver(orchard): {}", orchard_only.encode(&params));
+                 }
+diff --git a/src/commands/wallet/propose.rs b/src/commands/wallet/propose.rs
+index 33fcc41..5460a29 100644
+--- a/src/commands/wallet/propose.rs
++++ b/src/commands/wallet/propose.rs
+@@ -2,7 +2,7 @@ use std::{num::NonZeroUsize, str::FromStr};
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use uuid::Uuid;
+ use zcash_address::ZcashAddress;
+ use zcash_client_backend::{
+@@ -55,7 +55,7 @@ impl Command {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+ 
+         let change_strategy = MultiOutputChangeStrategy::new(
+diff --git a/src/commands/wallet/reset.rs b/src/commands/wallet/reset.rs
+index 7851eb1..d1c7f24 100644
+--- a/src/commands/wallet/reset.rs
++++ b/src/commands/wallet/reset.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use zcash_client_backend::{
+     data_api::{Account, WalletRead},
+     proto::service,
+@@ -45,7 +45,7 @@ impl Command {
+         // Get the account name and key source to preserve them.
+         let (account_name, key_source) = {
+             let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-            let db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++            let db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+             let account_id = *db_data
+                 .get_account_ids()?
+diff --git a/src/commands/wallet/send.rs b/src/commands/wallet/send.rs
+index 44ecdf3..daa61da 100644
+--- a/src/commands/wallet/send.rs
++++ b/src/commands/wallet/send.rs
+@@ -4,7 +4,7 @@ use std::{num::NonZeroUsize, str::FromStr};
+ use age::Identity;
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use secrecy::ExposeSecret;
+ use uuid::Uuid;
+ 
+@@ -187,7 +187,7 @@ pub(crate) async fn pay<C: PaymentContext>(
+     let params = config.network();
+ 
+     let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-    let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++    let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+     let account = select_account(&db_data, context.spending_account())?;
+     let derivation = account
+         .source()
+@@ -254,6 +254,8 @@ pub(crate) async fn pay<C: PaymentContext>(
+         let txids = create_proposed_transactions(
+             &mut db_data,
+             &params,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             &prover,
+             &prover,
+             &SpendingKeys::from_unified_spending_key(usk),
+diff --git a/src/commands/wallet/shield.rs b/src/commands/wallet/shield.rs
+index adb8bb7..18fd3d1 100644
+--- a/src/commands/wallet/shield.rs
++++ b/src/commands/wallet/shield.rs
+@@ -3,7 +3,7 @@ use std::num::NonZeroUsize;
+ 
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use secrecy::ExposeSecret;
+ use transparent::address::TransparentAddress;
+ use uuid::Uuid;
+@@ -68,7 +68,7 @@ impl Command {
+         let params = config.network();
+ 
+         let (_, db_data) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let account = select_account(&db_data, self.account_id)?;
+         let derivation = account.source().key_derivation().ok_or(anyhow!(
+             "Cannot spend from view-only accounts; did you mean to use `pczt shield` instead?"
+@@ -154,6 +154,8 @@ impl Command {
+         let txids = create_proposed_transactions(
+             &mut db_data,
+             &params,
++            &SystemClock,
++            &mut UnwrapErr(SysRng),
+             &prover,
+             &prover,
+             &SpendingKeys::from_unified_spending_key(usk),
+diff --git a/src/commands/wallet/sync.rs b/src/commands/wallet/sync.rs
+index 4f923df..c4bc0cb 100644
+--- a/src/commands/wallet/sync.rs
++++ b/src/commands/wallet/sync.rs
+@@ -5,7 +5,7 @@ use clap::Args;
+ use futures_util::TryStreamExt;
+ use orchard::tree::MerkleHashOrchard;
+ use prost::Message;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use tokio::{fs::File, io::AsyncWriteExt, task::JoinHandle};
+ 
+ use tonic::transport::Channel;
+@@ -85,7 +85,7 @@ impl Command {
+         let (fsblockdb_root, db_data) = get_db_paths(wallet_dir.as_ref());
+         let fsblockdb_root = fsblockdb_root.as_path();
+         let mut db_cache = FsBlockDb::for_path(fsblockdb_root).map_err(error::Error::from)?;
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+         let mut client = self.connection.connect(params, wallet_dir.as_ref()).await?;
+ 
+         #[cfg(feature = "tui")]
+@@ -118,7 +118,7 @@ impl Command {
+             params: &P,
+             fsblockdb_root: &Path,
+             db_cache: &mut FsBlockDb,
+-            db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++            db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+             #[cfg(feature = "tui")] tui_handle: Option<&defrag::AppHandle>,
+         ) -> Result<bool, anyhow::Error> {
+             // 3) Download chain tip metadata from lightwalletd
+@@ -377,7 +377,7 @@ impl Command {
+ 
+ async fn update_subtree_roots<P: Parameters>(
+     client: &mut CompactTxStreamerClient<Channel>,
+-    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+ ) -> Result<(), anyhow::Error> {
+     let mut request = service::GetSubtreeRootsArg::default();
+     request.set_shielded_protocol(service::ShieldedProtocol::Sapling);
+@@ -443,7 +443,7 @@ async fn update_subtree_roots<P: Parameters>(
+ 
+ async fn update_chain_tip<P: Parameters>(
+     client: &mut CompactTxStreamerClient<Channel>,
+-    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+ ) -> Result<(BlockHeight, BlockHash), anyhow::Error> {
+     let latest = client
+         .get_latest_block(service::ChainSpec::default())
+@@ -479,7 +479,7 @@ async fn update_chain_tip<P: Parameters>(
+ /// that has no checkpoint the reorg is deeper than our rewindable history and we
+ /// return an actionable "reset the wallet" error rather than silently wedging.
+ fn rewind<P: Parameters>(
+-    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+     db_cache: &mut FsBlockDb,
+     fsblockdb_root: &Path,
+     at_height: BlockHeight,
+@@ -673,7 +673,7 @@ fn scan_blocks<P: Parameters + Send + 'static>(
+     params: &P,
+     fsblockdb_root: &Path,
+     db_cache: &mut FsBlockDb,
+-    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+     initial_chain_state: &ChainState,
+     scan_range: &ScanRange,
+     #[cfg(feature = "tui")] tui_handle: Option<&defrag::AppHandle>,
+@@ -789,7 +789,7 @@ fn scan_blocks<P: Parameters + Send + 'static>(
+ async fn refresh_utxos<P: Parameters>(
+     params: &P,
+     client: &mut CompactTxStreamerClient<Channel>,
+-    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, OsRng>,
++    db_data: &mut WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>,
+     account_id: AccountUuid,
+     start_height: BlockHeight,
+ ) -> Result<(), anyhow::Error> {
+diff --git a/src/commands/wallet/tree/fix.rs b/src/commands/wallet/tree/fix.rs
+index 7ba1ad7..7e7984a 100644
+--- a/src/commands/wallet/tree/fix.rs
++++ b/src/commands/wallet/tree/fix.rs
+@@ -1,6 +1,6 @@
+ use clap::Args;
+ use nonempty::NonEmpty;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use zcash_client_backend::data_api::scanning::ScanPriority;
+ use zcash_client_sqlite::{WalletDb, util::SystemClock};
+ 
+@@ -13,7 +13,7 @@ impl Command {
+     pub(crate) async fn run(self, wallet_dir: Option<String>) -> Result<(), anyhow::Error> {
+         let params = get_wallet_network(wallet_dir.as_ref())?;
+         let (_, db_path) = get_db_paths(wallet_dir.as_ref());
+-        let mut db_data = WalletDb::for_path(db_path, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_path, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         if let Some(corrupt_ranges) = NonEmpty::from_vec(db_data.check_witnesses()?) {
+             let corrupt_ranges_len = corrupt_ranges.len();
+diff --git a/src/commands/wallet/upgrade.rs b/src/commands/wallet/upgrade.rs
+index 9c9ff8c..854df28 100644
+--- a/src/commands/wallet/upgrade.rs
++++ b/src/commands/wallet/upgrade.rs
+@@ -1,6 +1,6 @@
+ use anyhow::anyhow;
+ use clap::Args;
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use zcash_client_sqlite::{
+     FsBlockDb, WalletDb,
+     chain::init::init_blockmeta_db,
+@@ -28,7 +28,7 @@ impl Command {
+ 
+         let (fsblockdb_root, db_data) = get_db_paths(wallet_dir.as_ref());
+         let mut db_cache = FsBlockDb::for_path(fsblockdb_root).map_err(error::Error::from)?;
+-        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++        let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+ 
+         init_blockmeta_db(&mut db_cache)?;
+ 
+diff --git a/src/data.rs b/src/data.rs
+index 7481c38..54adf9a 100644
+--- a/src/data.rs
++++ b/src/data.rs
+@@ -1,4 +1,4 @@
+-use rand::rngs::OsRng;
++use rand::{rand_core::UnwrapErr, rngs::SysRng};
+ use std::path::{Path, PathBuf};
+ use zcash_client_sqlite::chain::init::init_blockmeta_db;
+ use zcash_client_sqlite::util::SystemClock;
+@@ -300,11 +300,11 @@ pub(crate) async fn erase_wallet_state<P: AsRef<Path>>(wallet_dir: Option<P>) {
+ pub(crate) fn init_dbs<P: Parameters + 'static>(
+     params: P,
+     wallet_dir: Option<&String>,
+-) -> Result<WalletDb<rusqlite::Connection, P, SystemClock, OsRng>, anyhow::Error> {
++) -> Result<WalletDb<rusqlite::Connection, P, SystemClock, UnwrapErr<SysRng>>, anyhow::Error> {
+     // Initialise the block and wallet DBs.
+     let (db_cache, db_data) = get_db_paths(wallet_dir);
+     let mut db_cache = FsBlockDb::for_path(db_cache).map_err(error::Error::from)?;
+-    let mut db_data = WalletDb::for_path(db_data, params, SystemClock, OsRng)?;
++    let mut db_data = WalletDb::for_path(db_data, params, SystemClock, UnwrapErr(SysRng))?;
+     init_blockmeta_db(&mut db_cache)?;
+     init_wallet_db(&mut db_data, None)?;
+ 
+diff --git a/src/helpers/pczt/create_manual.rs b/src/helpers/pczt/create_manual.rs
+index b8f678a..f00a012 100644
+--- a/src/helpers/pczt/create_manual.rs
++++ b/src/helpers/pczt/create_manual.rs
+@@ -77,7 +77,7 @@ pub(crate) fn handle_recipient<C, T>(
+     on_orchard: impl FnOnce(orchard::Address, C) -> anyhow::Result<T>,
+ ) -> anyhow::Result<T> {
+     match recipient {
+-        Address::Sapling(payment_address) => on_sapling(payment_address, ctx),
++        Address::Sapling(payment_address) => on_sapling(*payment_address, ctx),
+         Address::Transparent(transparent_address) => on_transparent(transparent_address, ctx),
+         Address::Unified(unified_address) => match unified_address
+             .as_understood_receivers()
