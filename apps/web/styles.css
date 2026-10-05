@@ -424,9 +424,9 @@ details.glass[open] summary::after { content: "–"; }
 :root { --gold: #b47d00; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gold: #f4b728; } }
 :root[data-theme="dark"] { --gold: #f4b728; }
-.gold { color: var(--gold); }
+.gold { background: linear-gradient(100deg, var(--buyer), var(--seller) 55%, var(--arbiter)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .brand-mark { width: 28px; height: 28px; }
 .brand > span { white-space: nowrap; }
 .tagline { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; font: 500 0.95rem/1.2 var(--body); letter-spacing: .06em; color: var(--ink-2); }
-.tagline i { font: 600 0.72rem/1 var(--mono); font-style: normal; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); display: inline-flex; align-items: center; gap: 10px; }
-.tagline i::before, .tagline i::after { content: ""; width: 22px; height: 1.5px; background: var(--gold); border-radius: 2px; }
+.tagline i { font: 600 0.72rem/1 var(--mono); font-style: normal; letter-spacing: .24em; text-transform: uppercase; color: var(--space); display: inline-flex; align-items: center; gap: 10px; }
+.tagline i::before, .tagline i::after { content: ""; width: 22px; height: 1.5px; background: var(--space); border-radius: 2px; }
