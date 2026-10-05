@@ -25,14 +25,15 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 WORK="${AEGIS_WORK:-$HERE/.work}"
+SHARED="${AEGIS_SHARED:-$HERE/.work}"   # relay + its TLS cert, shared by all deals
 NETWORK="${AEGIS_NETWORK:-test}"
 DEAL="${AEGIS_DEAL:-poc-deal-1}"
 RELAY="127.0.0.1:2744"
 PARTIES=(buyer seller arbiter)
 
-mkdir -p "$WORK"
+mkdir -p "$WORK" "$SHARED"
 # Trusted by frost-client's rustls-native-certs only. Native path form for Windows builds.
-SSL_CERT_FILE="$(cygpath -w "$WORK/ca.pem" 2>/dev/null || echo "$WORK/ca.pem")"
+SSL_CERT_FILE="$(cygpath -w "$SHARED/ca.pem" 2>/dev/null || echo "$SHARED/ca.pem")"
 export SSL_CERT_FILE
 
 bin() {
@@ -46,7 +47,7 @@ bin() {
   command -v "$name" || { echo "missing binary: $name (set AEGIS_BIN)" >&2; exit 1; }
 }
 
-cfg() { echo "$WORK/$1.toml"; }
+cfg() { echo "$SHARED/$1.toml"; }
 say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
 # Read a value out of a frost-client TOML config.
@@ -71,35 +72,35 @@ PY
 ossl() { MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' openssl "$@"; }
 
 cmd_certs() {
-  [[ -f "$WORK/ca.pem" && -f "$WORK/relay.pem" ]] && { echo "certs already exist"; return; }
+  [[ -f "$SHARED/ca.pem" && -f "$SHARED/relay.pem" ]] && { echo "certs already exist"; return; }
   say "Generating a throwaway local CA and frostd certificate"
   # With path conversion off, hand openssl native paths ourselves.
-  local w; w="$(cygpath -m "$WORK" 2>/dev/null || echo "$WORK")"
+  local w; w="$(cygpath -m "$SHARED" 2>/dev/null || echo "$SHARED")"
   ossl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes -days 30 \
     -subj "/CN=Aegis Gate PoC CA" -keyout "$w/ca.key" -out "$w/ca.pem" 2>/dev/null
   ossl req -newkey ec -pkeyopt ec_paramgen_curve:P-256 -nodes \
     -subj "/CN=localhost" -keyout "$w/relay.key" -out "$w/relay.csr" 2>/dev/null
-  printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\n' > "$WORK/san.ext"
+  printf 'subjectAltName=DNS:localhost,IP:127.0.0.1\n' > "$SHARED/san.ext"
   ossl x509 -req -in "$w/relay.csr" -CA "$w/ca.pem" -CAkey "$w/ca.key" \
     -CAcreateserial -days 30 -extfile "$w/san.ext" -out "$w/relay.pem" 2>/dev/null
   ossl verify -CAfile "$w/ca.pem" "$w/relay.pem"
 }
 
 cmd_relay() {
-  if [[ -f "$WORK/frostd.pid" ]] && kill -0 "$(cat "$WORK/frostd.pid")" 2>/dev/null; then
+  if [[ -f "$SHARED/frostd.pid" ]] && kill -0 "$(cat "$SHARED/frostd.pid")" 2>/dev/null; then
     echo "frostd already running"; return
   fi
   say "Starting frostd on $RELAY"
   "$(bin frostd)" --ip 127.0.0.1 --port 2744 \
-    --tls-cert "$WORK/relay.pem" --tls-key "$WORK/relay.key" > "$WORK/frostd.log" 2>&1 &
-  echo $! > "$WORK/frostd.pid"
+    --tls-cert "$SHARED/relay.pem" --tls-key "$SHARED/relay.key" > "$SHARED/frostd.log" 2>&1 &
+  echo $! > "$SHARED/frostd.pid"
   sleep 1
-  kill -0 "$(cat "$WORK/frostd.pid")" || { cat "$WORK/frostd.log"; exit 1; }
+  kill -0 "$(cat "$SHARED/frostd.pid")" || { cat "$SHARED/frostd.log"; exit 1; }
 }
 
 cmd_stop() {
-  [[ -f "$WORK/frostd.pid" ]] && kill "$(cat "$WORK/frostd.pid")" 2>/dev/null || true
-  rm -f "$WORK/frostd.pid"
+  [[ -f "$SHARED/frostd.pid" ]] && kill "$(cat "$SHARED/frostd.pid")" 2>/dev/null || true
+  rm -f "$SHARED/frostd.pid"
 }
 
 cmd_parties() {

@@ -1,0 +1,272 @@
+<title>Aegis Gate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single notarial document column; the three-key lock is the one bold object. */
+:root {
+  --paper: #f6f5f1;
+  --sheet: #fffefb;
+  --ink: #17262a;
+  --ink-soft: #4d5e62;
+  --rule: #d9dcd6;
+  --brass: #9a6b1f;
+  --brass-soft: #f1e6cf;
+  --ok: #2f6b4f;
+  --ok-soft: #dcebe2;
+  --no: #8a3b2e;
+  --no-soft: #f2dfd9;
+  --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1719; --sheet: #152023; --ink: #e7ebe8; --ink-soft: #9fb0b1; --rule: #2a383b;
+    --brass: #d9a95a; --brass-soft: #33291a; --ok: #7fc4a0; --ok-soft: #1a3027; --no: #e39a8a; --no-soft: #3a211c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f1719; --sheet: #152023; --ink: #e7ebe8; --ink-soft: #9fb0b1; --rule: #2a383b;
+  --brass: #d9a95a; --brass-soft: #33291a; --ok: #7fc4a0; --ok-soft: #1a3027; --no: #e39a8a; --no-soft: #3a211c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.6 var(--body); padding-inline: 16px; }
+.page { max-width: 880px; margin: 0 auto; padding-block: 48px 64px; display: grid; gap: 72px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); line-height: 1.04; letter-spacing: -0.01em; }
+h1 em { font-style: italic; color: var(--brass); }
+h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); line-height: 1.15; }
+h3 { font-family: var(--body); font-size: 1rem; font-weight: 600; }
+p { margin: 0; max-width: 64ch; }
+a { color: var(--brass); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; border-radius: 4px; }
+.eyebrow { font: 500 0.75rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+.lede { font-size: 1.15rem; color: var(--ink-soft); }
+section { display: grid; gap: 22px; }
+.mono { font-family: var(--mono); font-size: 0.86rem; overflow-wrap: anywhere; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items: center; }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 6px; font: 600 0.95rem/1 var(--body); text-decoration: none; border: 1px solid var(--ink); color: var(--ink); background: transparent; cursor: pointer; }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn:hover { border-color: var(--brass); }
+.lock { width: 100%; max-width: 340px; justify-self: center; }
+
+/* Interactive: who can move the money */
+.vault { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 26px; display: grid; gap: 22px; }
+.parties { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.party { display: grid; gap: 4px; text-align: left; padding: 14px 16px; border-radius: 8px; border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer; font: inherit; }
+.party strong { font-weight: 600; }
+.party span { font-size: 0.85rem; color: var(--ink-soft); }
+.party[aria-pressed="true"] { border-color: var(--brass); background: var(--brass-soft); }
+.party[aria-pressed="true"] strong::before { content: "✓ "; color: var(--brass); }
+.verdict { display: grid; gap: 6px; padding: 16px 18px; border-radius: 8px; border: 1px solid var(--rule); }
+.verdict[data-state="ok"] { background: var(--ok-soft); border-color: transparent; }
+.verdict[data-state="no"] { background: var(--no-soft); border-color: transparent; }
+.verdict b { font-family: var(--display); font-size: 1.35rem; font-weight: 500; }
+.verdict[data-state="ok"] b { color: var(--ok); }
+.verdict[data-state="no"] b { color: var(--no); }
+
+/* Evidence ledger */
+.ledger { display: grid; border-top: 1px solid var(--ink); }
+.row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+.row > div { min-width: 0; display: grid; gap: 4px; }
+.status { font: 500 0.72rem/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; padding-top: 3px; }
+.status.ok { color: var(--ok); }
+.status.wait { color: var(--brass); }
+.row p { color: var(--ink-soft); font-size: 0.95rem; }
+
+.keybox { display: grid; gap: 10px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; }
+.keyline { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.keyline code { font-family: var(--mono); font-size: 0.78rem; line-height: 1.5; overflow-wrap: anywhere; background: var(--paper); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--rule); }
+.copy { padding: 8px 12px; font-size: 0.85rem; }
+
+/* Process */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.steps li::before { content: counter(s, decimal-leading-zero); font: 500 0.85rem/1.8 var(--mono); color: var(--brass); }
+.steps li div { min-width: 0; display: grid; gap: 2px; }
+.steps li p { color: var(--ink-soft); font-size: 0.95rem; }
+
+/* Two views */
+.views { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.view { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 20px; display: grid; gap: 12px; align-content: start; }
+.view dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; font-size: 0.92rem; }
+.view dt { color: var(--ink-soft); }
+.view dd { margin: 0; font-family: var(--mono); font-size: 0.82rem; overflow-wrap: anywhere; }
+.view.chain dd { color: var(--ink-soft); }
+
+.roadmap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 28px; }
+.roadmap div { display: grid; gap: 4px; min-width: 0; }
+.roadmap p { color: var(--ink-soft); font-size: 0.95rem; }
+
+footer { display: grid; gap: 8px; padding-top: 24px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.9rem; }
+
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; }
+  .lock { max-width: 240px; }
+  .parties, .views, .roadmap { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 1fr; gap: 6px; }
+  .keyline { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lock .bolt { transition: transform 0.45s ease; }
+}
+</style>
+
+<main class="page">
+  <header class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Zcash · Ironwood · 2-of-3 FROST</span>
+      <h1>Two strangers can trade <em>privately</em> without trusting each other.</h1>
+      <p class="lede">Aegis Gate is escrow for shielded Zcash. The buyer pays into a shielded address that three people control together. Any two of them can move the money. No one alone can, Aegis included.</p>
+      <div class="actions">
+        <a class="btn primary" href="https://github.com/angelraph/aegis-gate">Read the code</a>
+        <a class="btn" href="#evidence">See the testnet proof</a>
+      </div>
+    </div>
+    <svg class="lock" viewBox="0 0 260 300" role="img" aria-labelledby="lockTitle">
+      <title id="lockTitle">A lock with three keyholes, opened by any two keys</title>
+      <rect x="30" y="20" width="200" height="260" rx="14" fill="var(--sheet)" stroke="var(--ink)" stroke-width="2"/>
+      <rect x="48" y="38" width="164" height="224" rx="8" fill="none" stroke="var(--rule)" stroke-width="1.5"/>
+      <g class="bolt" id="bolt"><rect x="214" y="138" width="34" height="24" rx="4" fill="var(--brass)"/></g>
+      <g font-family="var(--mono)" font-size="11" fill="var(--ink-soft)" text-anchor="middle">
+        <g id="kh-buyer"><circle cx="130" cy="82" r="18" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/><rect x="127" y="78" width="6" height="16" rx="2" fill="var(--ink)"/><text x="130" y="118">BUYER</text></g>
+        <g id="kh-seller"><circle cx="88" cy="168" r="18" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/><rect x="85" y="164" width="6" height="16" rx="2" fill="var(--ink)"/><text x="88" y="204">SELLER</text></g>
+        <g id="kh-arbiter"><circle cx="172" cy="168" r="18" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.5"/><rect x="169" y="164" width="6" height="16" rx="2" fill="var(--ink)"/><text x="172" y="204">ARBITER</text></g>
+        <text x="130" y="244" font-size="12" fill="var(--brass)" id="lockLabel">2 of 3 to open</text>
+      </g>
+    </svg>
+  </header>
+
+  <section aria-labelledby="who">
+    <span class="eyebrow">Try it</span>
+    <h2 id="who">Who can move the money?</h2>
+    <p>Pick who signs. The escrow follows the same rule on-chain: a spend needs one valid FROST signature that only two of the three key shares can produce together.</p>
+    <div class="vault">
+      <div class="parties" role="group" aria-label="Choose signers">
+        <button class="party" id="p-buyer" data-p="buyer" aria-pressed="true"><strong>Buyer</strong><span>Paid into escrow</span></button>
+        <button class="party" id="p-seller" data-p="seller" aria-pressed="true"><strong>Seller</strong><span>Delivered the item</span></button>
+        <button class="party" id="p-arbiter" data-p="arbiter" aria-pressed="false"><strong>Arbiter</strong><span>Steps in only on a dispute</span></button>
+      </div>
+      <div class="verdict" id="verdict" data-state="ok" aria-live="polite">
+        <b id="vTitle">Release to the seller</b>
+        <span id="vBody">Normal trade. Buyer and seller co-sign, the seller is paid, and the arbiter never sees a signing request.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="evidence" aria-labelledby="ev">
+    <span class="eyebrow">Proven on Zcash testnet · 5 October 2026</span>
+    <h2 id="ev">What already works</h2>
+    <p>Testnet switched to NU7 at block 4,465,026, a few hours before this escrow was funded. No released Zcash tool could build NU7 transactions yet, so the repo pins the newest Zcash libraries and includes a port of zcash-devtool.</p>
+    <div class="ledger">
+      <div class="row"><span class="status ok">Done</span><div><h3>Three-party key ceremony</h3><p>Buyer, seller and arbiter ran a 2-of-3 RedPallas FROST key generation through an end-to-end encrypted relay. Nobody ever held the full spending key.</p></div></div>
+      <div class="row"><span class="status ok">Done</span><div><h3>Same escrow, computed three times</h3><p>Each party derived the escrow address and viewing key on their own. All three results were byte-identical, so no one has to be trusted to hand out the address.</p></div></div>
+      <div class="row"><span class="status ok">Done</span><div><h3>Funded on Ironwood</h3><p>0.125 TAZ landed in the escrow in block 4,465,795.</p><span class="mono">tx 669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef</span></div></div>
+      <div class="row"><span class="status ok">Done</span><div><h3>Two signers, one valid signature</h3><p>Buyer and seller produced a FROST signature that verifies against the escrow key exactly as consensus checks a spend. Forged and tampered signatures are rejected by tests.</p></div></div>
+      <div class="row" id="releaseRow"><span class="status wait" id="releaseStatus">In progress</span><div><h3>Release to the seller</h3><p id="releaseText">The 2-of-3 release transaction is being built and broadcast on NU7 testnet.</p><span class="mono" id="releaseTx" hidden></span></div></div>
+    </div>
+
+    <div class="keybox">
+      <h3>Audit this escrow yourself</h3>
+      <p>Public testnet explorers have not indexed Ironwood transactions after NU7 yet. You don't need them: import this escrow's viewing key, view-only, into any Ironwood-capable testnet wallet to see the funding and the release. Publishing it is safe for this demo. A viewing key shows activity but can never spend.</p>
+      <div class="keyline"><code id="ufvk">uviewtest143j06vt05dlepuuvt6p52jm2nthxgk3lnw8a3d2l04ugurpk6zsde26sl2gp28yzs45xsu8xmxtwjsqcg88j4jycdrraeh2kxqv5fjngusxepmkxm453yeqlwd3f4tmt6l4vhw3hve0agxdp0mkhk8g68cxaa8x4dxj6nvldn73cntq8mua2fygwylmra</code><button class="btn copy" type="button" data-copy="ufvk">Copy</button></div>
+      <p class="eyebrow">Escrow address</p>
+      <div class="keyline"><code id="addr">utest1qfcz6w3zdf9pt75y6432fet4l6x9h48r9qh676g8s4334mrjegqzyj44jagfvqsv9s5fch63ugr8saheku0y98vc63l2ww53vvz07gwv</code><button class="btn copy" type="button" data-copy="addr">Copy</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="flow">
+    <span class="eyebrow">A deal, start to finish</span>
+    <h2 id="flow">How a trade runs</h2>
+    <ol class="steps">
+      <li><div><h3>Seller opens a deal</h3><p>Item, price in ZEC, terms. Aegis Gate gives a link to send over Signal, Telegram or a DM. No accounts.</p></div></li>
+      <li><div><h3>Three keys are made</h3><p>Buyer, seller and arbiter run FROST key generation. Each keeps one share. The escrow address comes out of it.</p></div></li>
+      <li><div><h3>Everyone checks the escrow</h3><p>Each side recomputes the address from the shared group key and the deal ID. If anything differs, the deal stops.</p></div></li>
+      <li><div><h3>Buyer pays in</h3><p>From Zashi, Zodl or any Ironwood wallet. Both sides see "funded" through the viewing key. Nothing about the deal is visible on-chain.</p></div></li>
+      <li><div><h3>Two keys release it</h3><p>Buyer and seller co-sign the payout. In a dispute, the arbiter co-signs with whoever is right.</p></div></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="seen">
+    <span class="eyebrow">Shielded throughout</span>
+    <h2 id="seen">What the chain sees, and what you see</h2>
+    <div class="views">
+      <div class="view chain"><h3>Anyone watching the chain</h3>
+        <dl><dt>Sender</dt><dd>hidden</dd><dt>Recipient</dt><dd>hidden</dd><dt>Amount</dt><dd>hidden</dd><dt>Escrow</dt><dd>looks like any Ironwood address</dd><dt>Visible</dt><dd>that a shielded transaction happened, and its fee</dd></dl></div>
+      <div class="view"><h3>The three deal parties</h3>
+        <dl><dt>Deal</dt><dd>1 hand-bound notebook</dd><dt>Price</dt><dd>0.10 ZEC</dd><dt>Escrow</dt><dd>funded ✓, 3 of 3 agree on address</dd><dt>Next</dt><dd>buyer + seller sign the release</dd></dl></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="next">
+    <span class="eyebrow">Next</span>
+    <h2 id="next">From working core to product</h2>
+    <div class="roadmap">
+      <div><h3>Browser signer</h3><p>Each key share lives only in its owner's browser. Before signing, it shows "pay X ZEC to Y" and refuses anything else. Never a bare hash.</p></div>
+      <div><h3>Deal links</h3><p>Create, join, fund with a QR code from your wallet, release or refund with one button. An arbiter dashboard handles disputes.</p></div>
+      <div><h3>First purchase as onboarding</h3><p>New users set up a wallet, get ZEC and shield it inside the deal, so their first shielded transaction buys something real.</p></div>
+      <div><h3>Mainnet deals</h3><p>Small real trades with the community, each auditable through its escrow viewing key.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Aegis Gate is the trust layer of Aegis Market. Built for ZECATHON, Wildcard track.</span>
+    <span>Testnet prototype. Don't use it with mainnet funds yet. <a href="https://github.com/angelraph/aegis-gate/blob/main/docs/THREAT_MODEL.md">Threat model</a> · MIT or Apache-2.0</span>
+  </footer>
+</main>
+
+<script>
+(() => {
+  // Release evidence. Filled in once the 2-of-3 release is mined.
+  const RELEASE = null; // { txid: "...", height: 0 }
+
+  const sel = { buyer: true, seller: true, arbiter: false };
+  const outcomes = {
+    "buyer,seller": ["ok", "Release to the seller", "Normal trade. Buyer and seller co-sign, the seller is paid, and the arbiter never sees a signing request."],
+    "arbiter,seller": ["ok", "Dispute resolved for the seller", "The buyer won't confirm delivery. The arbiter reviews the evidence and co-signs with the seller."],
+    "arbiter,buyer": ["ok", "Refund to the buyer", "The item never arrived. The arbiter co-signs a refund with the buyer."],
+  };
+  const v = document.getElementById("verdict");
+  const bolt = document.getElementById("bolt");
+  function render() {
+    const on = Object.keys(sel).filter(k => sel[k]).sort();
+    let state, title, body;
+    if (on.length < 2) { [state, title, body] = ["no", "Nothing moves", on.length ? `The ${on[0]} alone holds one share. One share can't produce a valid signature, so the funds stay locked.` : "No one has signed. The funds stay locked in the escrow."]; }
+    else if (on.length === 3) { [state, title, body] = ["ok", "Any two are enough", "All three can sign, but only two signatures are needed. In practice the arbiter stays out unless there's a dispute."]; }
+    else { [state, title, body] = outcomes[on.join(",")]; }
+    v.dataset.state = state;
+    document.getElementById("vTitle").textContent = title;
+    document.getElementById("vBody").textContent = body;
+    bolt.style.transform = state === "ok" ? "translateX(-26px)" : "translateX(0)";
+    document.getElementById("lockLabel").textContent = state === "ok" ? "open" : "2 of 3 to open";
+    for (const p of Object.keys(sel)) {
+      document.getElementById("p-" + p).setAttribute("aria-pressed", String(sel[p]));
+      document.querySelector(`#kh-${p} circle`).setAttribute("fill", sel[p] ? "var(--brass-soft)" : "var(--paper)");
+    }
+  }
+  document.querySelectorAll(".party").forEach(b => b.addEventListener("click", () => { sel[b.dataset.p] = !sel[b.dataset.p]; render(); }));
+  render();
+
+  document.querySelectorAll("[data-copy]").forEach(btn => btn.addEventListener("click", async () => {
+    const el = document.getElementById(btn.dataset.copy);
+    try { await navigator.clipboard.writeText(el.textContent); btn.textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected"; }
+    setTimeout(() => (btn.textContent = "Copy"), 1600);
+  }));
+
+  if (RELEASE) {
+    const st = document.getElementById("releaseStatus");
+    st.textContent = "Done"; st.className = "status ok";
+    document.getElementById("releaseText").textContent = `Buyer and seller co-signed. 0.10 TAZ reached the seller's wallet in block ${RELEASE.height.toLocaleString("en-US")}.`;
+    const tx = document.getElementById("releaseTx"); tx.textContent = "tx " + RELEASE.txid; tx.hidden = false;
+  }
+})();
+</script>

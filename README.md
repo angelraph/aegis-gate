@@ -25,7 +25,7 @@ between strangers, protected without trusting anyone. Aegis Gate is the trust la
 | Escrow address + viewing key derived **independently by all three parties**, byte-identical | ✅ | `poc/escrow.sh escrow`, pinned by test |
 | Escrow funded on Ironwood, watched view-only (no one holds the spending key) | ✅ | tx `669e43e2fb27cf15f7a0eb098eb17efe56dc3bd8b3443abc656697359bcdcfef`, block 4,465,795 |
 | Buyer + seller FROST signature verified against `rk = ak + [α]G` (the consensus check) | ✅ | `aegis verify-sig` |
-| Release: PCZT built → proven → 2-of-3 FROST signed → broadcast on Ironwood | RELEASE_STATUS | RELEASE_TX |
+| Release: PCZT built → proven → 2-of-3 FROST signed → broadcast on Ironwood | ✅ | tx `1b980aaa5dfd2ee811f824688c7c5b264aaa1b87aa940dddc99d3697b11e8bdf`, block 4,465,954: 0.10 TAZ to the seller |
 | Forged / malformed / tampered signatures rejected | ✅ | `cargo test` (7 tests) |
 
 Testnet activated **NU7 at height 4,465,026**, hours before this escrow was funded. No
