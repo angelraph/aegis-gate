@@ -22,11 +22,12 @@ const frost = createRequire(import.meta.url)("./signer/aegis_signer.js");
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SCRIPT = join(ROOT, "poc", "escrow.sh");
-const SHARED = join(ROOT, "poc", ".work");
+const SHARED = process.env.AEGIS_SHARED_DIR || join(ROOT, "poc", ".work");
 const DEALS = process.env.AEGIS_DEALS || join(ROOT, "poc", ".deals");
 const PORT = Number(process.env.PORT || 8787);
-const BASH = process.env.AEGIS_BASH || "C:\\Program Files\\Git\\bin\\bash.exe";
-const DEVTOOL = join(process.env.AEGIS_BIN || "", "zcash-devtool.exe");
+const WIN = process.platform === "win32";
+const BASH = process.env.AEGIS_BASH || (WIN ? "C:\\Program Files\\Git\\bin\\bash.exe" : "/bin/bash");
+const DEVTOOL = join(process.env.AEGIS_BIN || "", WIN ? "zcash-devtool.exe" : "zcash-devtool");
 const ROLES = ["buyer", "seller", "arbiter"];
 // Mainnet is a beta: real ZEC in an unaudited system, so each deal is capped.
 const MAINNET_CAP_ZEC = Number(process.env.AEGIS_MAINNET_CAP || 0.00045);
@@ -601,4 +602,5 @@ for (const id of readdirSync(DEALS)) {
   if (d && d.mode === "self" && d.keys?.finishing && !d.escrow) { delete d.keys.finishing; save(d); }
 }
 
-server.listen(PORT, "127.0.0.1", () => console.log(`Aegis Gate engine on http://127.0.0.1:${PORT}`));
+const HOST = process.env.HOST || "127.0.0.1"; // 0.0.0.0 inside a hosted container
+server.listen(PORT, HOST, () => console.log(`Aegis Gate engine on http://${HOST}:${PORT}`));

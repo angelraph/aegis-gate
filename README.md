@@ -103,7 +103,7 @@ check that replaces blind signing, viewing-key reach, quantum recoverability of 
 (escrows are short-lived by design), relay metadata.
 
 **Mainnet beta.** Mainnet deals are limited to 0.0002 to 0.00045 ZEC (about $0.26 to $0.60)
-while the escrow engine runs on a single machine. Testnet deals have no limit.
+while the system is unaudited and the engine runs as a single hosted instance. Testnet deals have no limit.
 
 ## Credits
 

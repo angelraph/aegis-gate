@@ -198,6 +198,7 @@ cargo build --release -p aegis-core
 # put frostd, frost-client, zcash-devtool and aegis in tools/bin, then:
 ./apps/engine/start.sh</pre>
       <p>The start script launches the relay and engine, opens a public tunnel, and points the website at it.</p>
+      <p>To run it always-on, build the container in <code>deploy/Dockerfile</code> on any Docker host (the live engine runs on Railway). It compiles the FROST and Zcash tools from pinned sources and keeps deals and escrow wallets on a volume mounted at <code>/data</code>.</p>
     </section>
 
     <section id="roadmap">
@@ -209,10 +210,11 @@ cargo build --release -p aegis-core
         <li><b>Security codes.</b> Both screens must show the same code, so a swapped key is caught.</li>
         <li><b>First purchase as onboarding.</b> Key backup, then a guided first shielded payment, inside your first deal.</li>
         <li><b>Mainnet beta.</b> Real ZEC, up to about $0.60 a deal, each escrow auditable through its viewing key.</li>
+        <li><b>Always-on engine.</b> The escrow engine runs hosted, with its own storage, independent of any one computer.</li>
       </ul>
       <h3>Next</h3>
       <ol>
-        <li><b>Always-on engine.</b> Today the escrow engine runs on one machine; a hosted engine removes downtime and lets the mainnet limit rise.</li>
+        <li><b>Independent audit.</b> Then higher mainnet limits.</li>
         <li><b>Choice of arbiter.</b> Pick an independent arbiter per deal.</li>
         <li><b>Aegis Market.</b> Listings on top of the escrow, so buyers can find sellers as well as pay them safely.</li>
       </ol>

@@ -49,7 +49,7 @@
   compared out of band before paying, and automatically warns if its own box key was
   altered. A swap that goes unnoticed before funding is the residual risk.
 - **Mainnet beta limits.** Mainnet deals are priced between 0.0002 and 0.00045 ZEC (about
-  $0.26 to $0.60) while the system is unaudited and the engine runs on a single machine.
+  $0.26 to $0.60) while the system is unaudited and the engine runs as a single hosted instance.
 - **Viewing key reach.** All three participants hold the escrow UFVK and can see its
   activity. Anyone who learns the group key *and* the deal ID can derive the same UFVK.
   Neither is published.
