@@ -41,7 +41,13 @@ start_tunnel() {
 }
 
 point_site() {
-  local url="$1" live
+  local url="$1" live current
+  # The live site uses the hosted engine; only take it over when explicitly asked.
+  current="$(grep -oE 'https://[a-z0-9.-]+' "$ROOT/apps/web/engine.json" 2>/dev/null | head -1)"
+  if [[ -n "$current" && "$current" != *trycloudflare.com && "${AEGIS_TAKE_OVER_SITE:-}" != 1 ]]; then
+    log "site uses the hosted engine ($current); not repointing (set AEGIS_TAKE_OVER_SITE=1 to override)"
+    return 0
+  fi
   live="$(curl -s -m 10 "https://$SITE_ALIAS/engine.json?ts=$(date +%s)" | grep -oE 'https://[a-z0-9.-]+' | head -1)"
   [[ "$live" == "$url" ]] && return 0
   printf '{ "url": "%s" }\n' "$url" > "$ROOT/apps/web/engine.json"
