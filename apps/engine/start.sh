@@ -48,7 +48,7 @@ point_site() {
   local deploy
   local out
   out="$(cd "$ROOT/apps/web" && vercel deploy --prod --yes 2>&1)"
-  deploy="$(printf '%s' "$out" | grep -oE 'https://aegis-gate-[a-z0-9]+-[a-z0-9-]+\.vercel\.app' | tail -1)"
+  deploy="$(printf '%s' "$out" | grep -oE 'aegis-gate-[a-z0-9]+-[a-z0-9-]+-projects\.vercel\.app' | tail -1)"
   [[ -n "$deploy" ]] || { log "vercel deploy failed: $(printf '%s' "$out" | tail -3 | tr '
 ' ' ')"; return 1; }
   (cd "$ROOT/apps/web" && vercel alias set "$deploy" "$SITE_ALIAS" >/dev/null 2>&1) && log "site now points to $url"
